@@ -72,3 +72,16 @@ path, find a proper way to get the output app's location.
 ```md
 Make the close button actually close (kill) the application.
 ```
+
+### 6
+
+#### Prompt
+
+```md
+It seems that even if my layout is colemak, the app still reads qwerty. (For
+example, it doesn't think I pressed `T` if the key I pressed is `T` in colemak
+(`F` in qwerty), and it thinks that I pressed `T` if the key I pressed is `G` in
+colemak (`T` in qwerty). )
+
+Also, please use `just` from now on for building/running the app.
+```
