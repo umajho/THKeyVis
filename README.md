@@ -85,3 +85,15 @@ colemak (`T` in qwerty). )
 
 Also, please use `just` from now on for building/running the app.
 ```
+
+### 7
+
+#### Prompt
+
+```md
+Please use text instead of icons to represent key names.
+
+Also, Please disable the animation, to make feedbacks fast.
+
+Note: you need to run `just build-*` before `just run-*`.
+```

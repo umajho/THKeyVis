@@ -81,7 +81,7 @@ struct KeyboardView: View {
                         .frame(width: 58) // ESC width + spacing
                     
                     KeyView(
-                        keyName: "⌫",
+                        keyName: "BACKSPACE",
                         isPressed: keyMonitor.pressedKeys.contains("backspace"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         width: 200, // Width to align with A through T

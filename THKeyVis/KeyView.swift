@@ -36,8 +36,6 @@ struct KeyView: View {
                 .foregroundColor(textColor)
         }
         .shadow(color: isPressed ? .blue.opacity(0.3) : .black.opacity(0.1), radius: isPressed ? 4 : 2)
-        .scaleEffect(isPressed ? 0.95 : 1.0)
-        .animation(.easeInOut(duration: 0.1), value: isPressed)
     }
     
     private var backgroundColor: Color {
