@@ -8,7 +8,7 @@
 import Cocoa
 import SwiftUI
 
-class WindowManager: NSObject, ObservableObject {
+class WindowManager: NSObject, ObservableObject, NSWindowDelegate {
     private var window: NSWindow?
     
     func setupWindow() {
@@ -36,6 +36,9 @@ class WindowManager: NSObject, ObservableObject {
         window.titleVisibility = .hidden
         window.title = "THKeyVis"
         
+        // Set window delegate to handle close events
+        window.delegate = self
+        
         // Make window stay on top even when other apps are focused
         window.hidesOnDeactivate = false
         window.canHide = true // Allow hiding with minimize button
@@ -55,5 +58,13 @@ class WindowManager: NSObject, ObservableObject {
     
     func bringToFront() {
         window?.orderFrontRegardless()
+    }
+    
+    // MARK: - NSWindowDelegate
+    
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        // Terminate the application when the close button is clicked
+        NSApplication.shared.terminate(nil)
+        return true
     }
 }

@@ -64,3 +64,11 @@ Write a justfile for `build-debug`, `build-release`, `run-debug`, and
 Please just write the 4 commands I mentioned for now, and don't use absolute
 path, find a proper way to get the output app's location.
 ```
+
+### 5
+
+#### Prompt
+
+```md
+Make the close button actually close (kill) the application.
+```
