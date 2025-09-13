@@ -126,3 +126,19 @@ also, no need for icon labels.
 
 <!-- screenshot -->
 ```
+
+### ⑨
+
+#### Prompt
+
+```md
+The position of the gray texts/icons are correct only if the height is minimum,
+but when the app is opened, it is not minimum in height.
+
+Also:
+
+- please don't make the icons gray, just use the same color as the key names.
+- please make the gray text can be a little larger, and should be capitalized.
+  It seems that gray is not very accessible, consider changing it to another
+  secondary color.
+```

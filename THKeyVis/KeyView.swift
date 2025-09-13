@@ -37,37 +37,38 @@ struct KeyView: View {
                 .stroke(borderColor, lineWidth: 2)
                 .frame(width: width, height: height)
             
-            ZStack {
+            VStack(spacing: 2) {
+                // QWERTY label at top (if provided)
+                if let qwertyLabel = qwertyLabel {
+                    HStack {
+                        Text(qwertyLabel.uppercased())
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundColor(secondaryTextColor)
+                        Spacer()
+                    }
+                } else {
+                    HStack {
+                        Spacer()
+                    }
+                    .frame(height: 12)
+                }
+                
                 // Main key name (centered)
                 Text(keyName.uppercased())
                     .font(.system(size: 12, weight: .semibold, design: .monospaced))
                     .foregroundColor(textColor)
                 
-                // QWERTY label at top left (if provided)
-                if let qwertyLabel = qwertyLabel {
-                    VStack {
-                        HStack {
-                            Text(qwertyLabel)
-                                .font(.system(size: 8, weight: .medium))
-                                .foregroundColor(.gray.opacity(0.6))
-                            Spacer()
-                        }
-                        Spacer()
-                    }
-                    .padding(4)
-                }
-                
                 // Icon at bottom (if provided, no labels)
                 if let iconName = iconName {
-                    VStack {
-                        Spacer()
-                        Image(systemName: iconName)
-                            .font(.system(size: 10))
-                            .foregroundColor(.gray.opacity(0.7))
-                    }
-                    .padding(4)
+                    Image(systemName: iconName)
+                        .font(.system(size: 10))
+                        .foregroundColor(textColor)
+                } else {
+                    Spacer()
+                        .frame(height: 12)
                 }
             }
+            .padding(4)
         }
         .shadow(color: isPressed ? .blue.opacity(0.3) : .black.opacity(0.1), radius: isPressed ? 4 : 2)
     }
@@ -105,6 +106,18 @@ struct KeyView: View {
             return .white
         } else {
             return .black.opacity(0.8)
+        }
+    }
+    
+    private var secondaryTextColor: Color {
+        if isPermissionDisabled {
+            return .red.opacity(0.5)
+        } else if isDisabled {
+            return .gray.opacity(0.4)
+        } else if isPressed {
+            return .white.opacity(0.7)
+        } else {
+            return .blue.opacity(0.7)
         }
     }
 }
