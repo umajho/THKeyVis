@@ -50,3 +50,17 @@ UI design:
 ```md
 Window control buttons (`[x]` and `[-]`) don't work, please fix it.
 ```
+
+### 4
+
+#### Prompt
+
+```md
+Write a justfile for `build-debug`, `build-release`, `run-debug`, and
+`run-release`.
+```
+
+```md
+Please just write the 4 commands I mentioned for now, and don't use absolute
+path, find a proper way to get the output app's location.
+```
