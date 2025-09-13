@@ -221,7 +221,26 @@ class KeyMonitor: ObservableObject {
         // Always update our internal state for visualization
         handleKeyEvent(type: type, event: event)
         
-        // Check if this key should be remapped
+        // Special case: Handle space -> shift remapping
+        if isRemapModeEnabled && originalKeyCode == 49 { // Space key
+            // Create a shift modifier event instead of a regular key event
+            if let shiftEvent = CGEvent(keyboardEventSource: nil,
+                                      virtualKey: 56, // Left shift key code
+                                      keyDown: type == .keyDown) {
+                
+                // Set the shift modifier flag
+                if type == .keyDown {
+                    shiftEvent.flags.insert(.maskShift)
+                } else {
+                    shiftEvent.flags.remove(.maskShift)
+                }
+                
+                print("🔄 Remapping space to shift: \(type == .keyDown ? "down" : "up")")
+                return Unmanaged.passRetained(shiftEvent)
+            }
+        }
+        
+        // Check if this key should be remapped (regular keys)
         if let remappedKeyCode = getRemappedKeyCode(for: Int(originalKeyCode)) {
             // Create a new event with the remapped key code
             if let newEvent = CGEvent(keyboardEventSource: nil, 
@@ -414,7 +433,7 @@ class KeyMonitor: ObservableObject {
         case 37: return 125 // L position -> Down Arrow
         case 41: return 124 // ; position -> Right Arrow
         case 51: return 6   // Backspace -> Z position
-        case 49: return 56  // Space -> Left Shift
+        // Space (49) is handled as special case in processKeyEvent
         default: return nil
         }
     }

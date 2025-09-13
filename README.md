@@ -307,3 +307,12 @@ fix that.
 Now, the UI part is done, you should start implementing the remapping
 functionality.
 ```
+
+```md
+Hmm, it doesn't seem that space->lshift works.
+```
+
+```md
+Please stop. I don't think simply mapping the shift key using keycode will ever
+work. You know that the shift key is a modifier key right?
+```
