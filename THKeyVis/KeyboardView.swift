@@ -248,7 +248,7 @@ struct KeyboardView: View {
         .padding(.bottom, 20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(.black.opacity(0.85))
+                .fill(.black.opacity(0.6))
                 .stroke(.gray.opacity(0.3), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.3), radius: 10)
