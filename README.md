@@ -227,3 +227,40 @@ Please set the title to `THKeyVis (https://github.com/umajho/THKeyVis)`.
 Weird, titlear is empty. I thought the title bar were always set to an empty
 text. it seems that there is a bug that makes the title not showing the text.
 ```
+
+### 14
+
+#### Prompts
+
+```md
+I wonder: since you alread made the KeyboardView round and have a transparnent
+margin to the window frame, can you just:
+
+- remove the window frame.
+- fake the title bar with a native-like red closing button and with the title
+  text.
+- make the whole body draggable (to move the window).
+```
+
+```md
+- while left-pressing and moving the cursor, the window doesn't move.
+- I want the close button and title at the top of the body, no need to create a
+  separate bar.
+```
+
+```md
+The close button and the title text is outside of the body. I want them to be
+inside. Also, since you make the link clickable, maybe consider changing the
+cursor style while the cursor is hovering on the link?
+
+<!--screenshot-->
+```
+
+```md
+The top padding is a little large, please make it smaller.
+
+Also, only the `https://…` part should be a link, the `THKeyVis` part (and the
+parens) should just be regular texts.
+
+<!--screen-->
+```

@@ -10,13 +10,15 @@ struct ContentView: View {
     @EnvironmentObject var windowManager: WindowManager
     
     var body: some View {
-        KeyboardView(keyMonitor: keyMonitor)
-            .padding()
-            .background(.clear)
-            .onAppear {
-                // Setup window after content appears
-                windowManager.setupWindow()
-            }
+        DraggableWindowView {
+            KeyboardView(keyMonitor: keyMonitor)
+                .padding()
+        }
+        .background(.clear)
+        .onAppear {
+            // Setup window after content appears
+            windowManager.setupWindow()
+        }
     }
 }
 

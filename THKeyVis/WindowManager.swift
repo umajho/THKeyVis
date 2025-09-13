@@ -23,33 +23,32 @@ class WindowManager: NSObject, ObservableObject, NSWindowDelegate {
         // Set window level to always be on top (highest level)
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
         
-        // Set window properties
+        // Set window properties for frameless design
         window.isOpaque = false
         window.backgroundColor = NSColor.clear
         window.hasShadow = true
-        window.titlebarAppearsTransparent = true
-        window.titleVisibility = .visible
-        window.title = "THKeyVis (https://github.com/umajho/THKeyVis)"
+        window.titlebarAppearsTransparent = false
+        window.titleVisibility = .hidden
         
         // Set window delegate to handle close events
         window.delegate = self
         
         // Make window stay on top even when other apps are focused
         window.hidesOnDeactivate = false
-        window.canHide = true // Allow hiding with minimize button
+        window.canHide = false // Disable minimize since we'll have custom controls
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         
         // Let the window size naturally first, then adjust and lock it
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            // Get the natural content size
+            // Get the natural content size (no extra space needed since title is integrated)
             let naturalSize = window.contentView?.fittingSize ?? NSSize(width: 450, height: 200)
             
             // Set a reasonable size that fits the content
             let targetSize = NSSize(width: max(naturalSize.width, 450), height: max(naturalSize.height, 200))
             window.setContentSize(targetSize)
             
-            // Now configure window style to prevent resizing
-            window.styleMask = [.titled, .closable, .miniaturizable]
+            // Configure frameless window style
+            window.styleMask = [.borderless]
             
             // Lock the size
             window.minSize = targetSize

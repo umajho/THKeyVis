@@ -10,7 +10,52 @@ struct KeyboardView: View {
     @ObservedObject var keyMonitor: KeyMonitor
     
     var body: some View {
-        VStack(spacing: 15) {
+        VStack(spacing: 12) {
+            // Header with close button and title
+            HStack {
+                // Close button (red dot like native macOS)
+                CloseButton()
+                
+                Spacer()
+                
+                // Title with mixed text and clickable link
+                HStack(spacing: 0) {
+                    Text("THKeyVis (")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.primary.opacity(0.7))
+                    
+                    Button(action: {
+                        if let url = URL(string: "https://github.com/umajho/THKeyVis") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }) {
+                        Text("https://github.com/umajho/THKeyVis")
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(.blue.opacity(0.8))
+                            .underline()
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .onHover { isHovering in
+                        if isHovering {
+                            NSCursor.pointingHand.push()
+                        } else {
+                            NSCursor.pop()
+                        }
+                    }
+                    
+                    Text(")")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(.primary.opacity(0.7))
+                }
+                
+                Spacer()
+                
+                // Invisible spacer on the right to balance the close button
+                Color.clear
+                    .frame(width: 16)
+            }
+            .frame(height: 18)
+            
             // Layout indicator
             HStack {
                 Text("Layout: \(keyMonitor.currentLayoutName)")
@@ -149,7 +194,9 @@ struct KeyboardView: View {
             }
             }
         }
-        .padding(20)
+        .padding(.horizontal, 20)
+        .padding(.top, 12)
+        .padding(.bottom, 20)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(.black.opacity(0.85))
