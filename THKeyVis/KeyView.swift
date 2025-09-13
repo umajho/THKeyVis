@@ -15,8 +15,9 @@ struct KeyView: View {
     let qwertyLabel: String?
     let iconName: String?
     let iconDescription: String?
+    let remappedKeyName: String?
     
-    init(keyName: String, isPressed: Bool, isDisabled: Bool = false, isPermissionDisabled: Bool = false, width: CGFloat = 50, height: CGFloat = 50, qwertyLabel: String? = nil, iconName: String? = nil, iconDescription: String? = nil) {
+    init(keyName: String, isPressed: Bool, isDisabled: Bool = false, isPermissionDisabled: Bool = false, width: CGFloat = 50, height: CGFloat = 50, qwertyLabel: String? = nil, iconName: String? = nil, iconDescription: String? = nil, remappedKeyName: String? = nil) {
         self.keyName = keyName
         self.isPressed = isPressed
         self.isDisabled = isDisabled
@@ -26,6 +27,7 @@ struct KeyView: View {
         self.qwertyLabel = qwertyLabel
         self.iconName = iconName
         self.iconDescription = iconDescription
+        self.remappedKeyName = remappedKeyName
     }
     
     var body: some View {
@@ -56,15 +58,51 @@ struct KeyView: View {
                     .font(.system(size: 12, weight: .semibold, design: .monospaced))
                     .foregroundColor(textColor)
                 
-                // Icon at bottom (if provided, no labels)
-                if let iconName = iconName {
-                    Image(systemName: iconName)
-                        .font(.system(size: 10))
-                        .foregroundColor(textColor)
-                } else {
-                    Spacer()
-                        .frame(height: 12)
+                // Icon or remap info at bottom (fixed height for consistent layout)
+                VStack {
+                    if let remappedKeyName = remappedKeyName {
+                        // Check if this is an arrow key remapping where icon matches the remapped symbol
+                        let isArrowRemap = (iconName == "arrow.left" && remappedKeyName == "←") ||
+                                          (iconName == "arrow.up" && remappedKeyName == "↑") ||
+                                          (iconName == "arrow.down" && remappedKeyName == "↓") ||
+                                          (iconName == "arrow.right" && remappedKeyName == "→")
+                        
+                        if isArrowRemap {
+                            // For arrow keys, just show the icon (no redundant text)
+                            if let iconName = iconName {
+                                Image(systemName: iconName)
+                                    .font(.system(size: 10))
+                                    .foregroundColor(textColor)
+                            }
+                        } else {
+                            // Show remap format: <icon> = <mapped key>
+                            HStack(spacing: 2) {
+                                if let iconName = iconName {
+                                    Image(systemName: iconName)
+                                        .font(.system(size: 10))
+                                        .foregroundColor(textColor)
+                                }
+                                if iconName != nil {
+                                    Text(" = \(remappedKeyName)")
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundColor(textColor)
+                                } else {
+                                    Text("→ \(remappedKeyName)")
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundColor(textColor)
+                                }
+                            }
+                        }
+                    } else if let iconName = iconName {
+                        Image(systemName: iconName)
+                            .font(.system(size: 10))
+                            .foregroundColor(textColor)
+                    } else {
+                        // Empty spacer to maintain consistent height
+                        Color.clear
+                    }
                 }
+                .frame(height: 12)
             }
             .padding(4)
         }

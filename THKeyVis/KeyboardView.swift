@@ -8,6 +8,30 @@ import AppKit
 
 struct KeyboardView: View {
     @ObservedObject var keyMonitor: KeyMonitor
+    @State private var isRemapModeEnabled = false
+    
+    // Helper function to get remapped key name
+    private func getRemappedKeyName(for qwertyLabel: String?) -> String? {
+        guard isRemapModeEnabled, let qwertyLabel = qwertyLabel else { return nil }
+        
+        switch qwertyLabel.lowercased() {
+        case "s": return "R"
+        case "f": return "X"
+        case "j": return "←"
+        case "k": return "↑"
+        case "l": return "↓"
+        case ";": return "→"
+        case "backspace": return "Z"
+        case "space": return "⇧"
+        default: return nil
+        }
+    }
+    
+    // Helper function to check if key should show remap
+    private func shouldShowRemap(for qwertyLabel: String?) -> Bool {
+        guard isRemapModeEnabled, let qwertyLabel = qwertyLabel else { return false }
+        return ["s", "f", "j", "k", "l", ";", "backspace", "space"].contains(qwertyLabel.lowercased())
+    }
     
     var body: some View {
         VStack(spacing: 12) {
@@ -56,12 +80,20 @@ struct KeyboardView: View {
             }
             .frame(height: 18)
             
-            // Layout indicator
+            // Layout indicator with remap mode toggle
             HStack {
                 Text("Layout: \(keyMonitor.currentLayoutName)")
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.secondary)
                 Spacer()
+                HStack(spacing: 6) {
+                    Text("Remap Mode")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondary)
+                    Toggle("", isOn: $isRemapModeEnabled)
+                        .toggleStyle(SwitchToggleStyle(tint: .blue))
+                        .scaleEffect(0.7)
+                }
             }
             
             // Permission warning banner
@@ -114,7 +146,8 @@ struct KeyboardView: View {
                         isPressed: keyMonitor.pressedKeys.contains("r"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "s",
-                        iconName: "arrow.clockwise"
+                        iconName: "arrow.clockwise",
+                        remappedKeyName: getRemappedKeyName(for: "s")
                     )
                     KeyView(
                         keyName: keyMonitor.getCharacterForUIKey(keyCode: 2), // D position (S in Colemak)
@@ -128,7 +161,8 @@ struct KeyboardView: View {
                         isPressed: keyMonitor.pressedKeys.contains("t"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "f",
-                        iconName: "burst.fill"
+                        iconName: "burst.fill",
+                        remappedKeyName: getRemappedKeyName(for: "f")
                     )
                 }
                 
@@ -143,7 +177,9 @@ struct KeyboardView: View {
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         width: 200, // Width to align with A through T
                         height: 50,
-                        iconName: "scope"
+                        qwertyLabel: "backspace",
+                        iconName: "scope",
+                        remappedKeyName: getRemappedKeyName(for: "backspace")
                     )
                 }
             }
@@ -157,28 +193,32 @@ struct KeyboardView: View {
                         isPressed: keyMonitor.pressedKeys.contains("n"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "j",
-                        iconName: "arrow.left"
+                        iconName: "arrow.left",
+                        remappedKeyName: getRemappedKeyName(for: "j")
                     )
                     KeyView(
                         keyName: keyMonitor.getCharacterForUIKey(keyCode: 40), // K position (E in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("e"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "k",
-                        iconName: "arrow.up"
+                        iconName: "arrow.up",
+                        remappedKeyName: getRemappedKeyName(for: "k")
                     )
                     KeyView(
                         keyName: keyMonitor.getCharacterForUIKey(keyCode: 37), // L position (I in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("i"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "l",
-                        iconName: "arrow.down"
+                        iconName: "arrow.down",
+                        remappedKeyName: getRemappedKeyName(for: "l")
                     )
                     KeyView(
                         keyName: keyMonitor.getCharacterForUIKey(keyCode: 41), // ; position (O in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("o"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: ";",
-                        iconName: "arrow.right"
+                        iconName: "arrow.right",
+                        remappedKeyName: getRemappedKeyName(for: ";")
                     )
                 }
                 
@@ -189,7 +229,9 @@ struct KeyboardView: View {
                     isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                     width: 200, // Width to span across N-O
                     height: 50,
-                    iconName: "tortoise.fill"
+                    qwertyLabel: "space",
+                    iconName: "tortoise.fill",
+                    remappedKeyName: getRemappedKeyName(for: "space")
                 )
             }
             }

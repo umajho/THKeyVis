@@ -264,3 +264,41 @@ parens) should just be regular texts.
 
 <!--screen-->
 ```
+
+### 15
+
+#### Prompts
+
+```md
+Please implement “remap mode”:
+
+- Add a toggle at the same line of “layout: XXX”, on the right side, to control
+  whether this mode is enabled.
+- When we are in the remap mode:
+  - remap `S` (QWERTY position, also apply to others at below) to `R`
+  - remap `F` to `X`
+  - remap `J`/`K`/`L`/`;` to right/up/down/left arrows
+  - remap backsapce to `Z`
+  - while space is pressed, simulate pressing left shift
+  - icons below key names other than those for arrow keys become:
+    `<icon> = <mapped key name>`
+```
+
+```md
+Nothing is remapped.
+
+Also, I got left and right wrong: `J` should be for left, and `;` should be for
+right. Sorry.
+```
+
+```md
+For `JKL;`, even if the remap mode is on, the icon line should still just
+contain the icon itself. Showing things like
+`<left arrow icon> = <left arrow key>` is unnecessary.
+```
+
+```md
+It seems the font size (line height?) of the icon line affects the layout, which
+makes the layout between enabling/disabling the remap mode inconsistent. Please
+fix that.
+```
