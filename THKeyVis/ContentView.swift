@@ -8,17 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var keyMonitor: KeyMonitor
+    @EnvironmentObject var windowManager: WindowManager
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        KeyboardView(keyMonitor: keyMonitor)
+            .background(.clear)
+            .onAppear {
+                // Ensure window stays on top
+                windowManager.bringToFront()
+            }
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(KeyMonitor())
+        .environmentObject(WindowManager())
 }
