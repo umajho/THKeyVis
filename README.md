@@ -10,6 +10,12 @@ is not very common:
   means this project is worthless for you if you are on other OSs.)
 - ergodox-like keyboard.
 
+## Screenshots
+
+| Basic                        | Remap Mode                        |
+| ---------------------------- | --------------------------------- |
+| ![](./screenshots/basic.png) | ![](./screenshots/remap-mode.png) |
+
 ## Copilot Agent Histroy
 
 ### 0
