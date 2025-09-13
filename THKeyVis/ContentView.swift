@@ -2,8 +2,6 @@
 //  ContentView.swift
 //  THKeyVis
 //
-//  Created by Umaĵo on 2025/9/13.
-//
 
 import SwiftUI
 

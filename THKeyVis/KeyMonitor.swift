@@ -2,8 +2,6 @@
 //  KeyMonitor.swift
 //  THKeyVis
 //
-//  Created by Umaĵo on 2025/9/13.
-//
 
 import Cocoa
 import SwiftUI

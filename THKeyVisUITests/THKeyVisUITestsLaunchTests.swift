@@ -2,8 +2,6 @@
 //  THKeyVisUITestsLaunchTests.swift
 //  THKeyVisUITests
 //
-//  Created by Umaĵo on 2025/9/13.
-//
 
 import XCTest
 

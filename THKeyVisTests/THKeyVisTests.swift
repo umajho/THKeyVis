@@ -2,8 +2,6 @@
 //  THKeyVisTests.swift
 //  THKeyVisTests
 //
-//  Created by Umaĵo on 2025/9/13.
-//
 
 import Testing
 @testable import THKeyVis
