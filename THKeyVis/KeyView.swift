@@ -14,14 +14,20 @@ struct KeyView: View {
     let isPermissionDisabled: Bool
     let width: CGFloat
     let height: CGFloat
+    let qwertyLabel: String?
+    let iconName: String?
+    let iconDescription: String?
     
-    init(keyName: String, isPressed: Bool, isDisabled: Bool = false, isPermissionDisabled: Bool = false, width: CGFloat = 50, height: CGFloat = 50) {
+    init(keyName: String, isPressed: Bool, isDisabled: Bool = false, isPermissionDisabled: Bool = false, width: CGFloat = 50, height: CGFloat = 50, qwertyLabel: String? = nil, iconName: String? = nil, iconDescription: String? = nil) {
         self.keyName = keyName
         self.isPressed = isPressed
         self.isDisabled = isDisabled
         self.isPermissionDisabled = isPermissionDisabled
         self.width = width
         self.height = height
+        self.qwertyLabel = qwertyLabel
+        self.iconName = iconName
+        self.iconDescription = iconDescription
     }
     
     var body: some View {
@@ -31,9 +37,37 @@ struct KeyView: View {
                 .stroke(borderColor, lineWidth: 2)
                 .frame(width: width, height: height)
             
-            Text(keyName.uppercased())
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                .foregroundColor(textColor)
+            ZStack {
+                // Main key name (centered)
+                Text(keyName.uppercased())
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .foregroundColor(textColor)
+                
+                // QWERTY label at top left (if provided)
+                if let qwertyLabel = qwertyLabel {
+                    VStack {
+                        HStack {
+                            Text(qwertyLabel)
+                                .font(.system(size: 8, weight: .medium))
+                                .foregroundColor(.gray.opacity(0.6))
+                            Spacer()
+                        }
+                        Spacer()
+                    }
+                    .padding(4)
+                }
+                
+                // Icon at bottom (if provided, no labels)
+                if let iconName = iconName {
+                    VStack {
+                        Spacer()
+                        Image(systemName: iconName)
+                            .font(.system(size: 10))
+                            .foregroundColor(.gray.opacity(0.7))
+                    }
+                    .padding(4)
+                }
+            }
         }
         .shadow(color: isPressed ? .blue.opacity(0.3) : .black.opacity(0.1), radius: isPressed ? 4 : 2)
     }

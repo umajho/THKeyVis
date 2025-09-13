@@ -54,24 +54,30 @@ struct KeyboardView: View {
                     KeyView(
                         keyName: "A",
                         isPressed: keyMonitor.pressedKeys.contains("a"),
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: "a",
+                        iconName: "arrow.clockwise"
                     )
                     KeyView(
                         keyName: "R",
                         isPressed: keyMonitor.pressedKeys.contains("r"),
                         isDisabled: true,
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: "s"
                     )
                     KeyView(
                         keyName: "S",
                         isPressed: keyMonitor.pressedKeys.contains("s"),
                         isDisabled: true,
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: "d"
                     )
                     KeyView(
                         keyName: "T",
                         isPressed: keyMonitor.pressedKeys.contains("t"),
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: "f",
+                        iconName: "burst.fill"
                     )
                 }
                 
@@ -85,7 +91,8 @@ struct KeyboardView: View {
                         isPressed: keyMonitor.pressedKeys.contains("backspace"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         width: 200, // Width to align with A through T
-                        height: 50
+                        height: 50,
+                        iconName: "scope"
                     )
                 }
             }
@@ -97,22 +104,30 @@ struct KeyboardView: View {
                     KeyView(
                         keyName: "N",
                         isPressed: keyMonitor.pressedKeys.contains("n"),
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: "j",
+                        iconName: "arrow.left"
                     )
                     KeyView(
                         keyName: "E",
                         isPressed: keyMonitor.pressedKeys.contains("e"),
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: "k",
+                        iconName: "arrow.up"
                     )
                     KeyView(
                         keyName: "I",
                         isPressed: keyMonitor.pressedKeys.contains("i"),
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: "l",
+                        iconName: "arrow.down"
                     )
                     KeyView(
                         keyName: "O",
                         isPressed: keyMonitor.pressedKeys.contains("o"),
-                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
+                        qwertyLabel: ";",
+                        iconName: "arrow.right"
                     )
                 }
                 
@@ -122,7 +137,8 @@ struct KeyboardView: View {
                     isPressed: keyMonitor.pressedKeys.contains("space"),
                     isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                     width: 200, // Width to span across N-O
-                    height: 50
+                    height: 50,
+                    iconName: "tortoise.fill"
                 )
             }
             }

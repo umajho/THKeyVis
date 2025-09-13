@@ -97,3 +97,32 @@ Also, Please disable the animation, to make feedbacks fast.
 
 Note: you need to run `just build-*` before `just run-*`.
 ```
+
+### 8
+
+#### Prompt
+
+```md
+Now:
+
+- add small gray `asdf/jkl;` at the top left `arst/neio`.
+- add icons below … representing:
+  - a: retry
+  - t: bomb (for STG games)
+  - n: left
+  - e: up
+  - i: down
+  - o: right
+  - backspace: shoot
+  - space: slow (holding space enters the slow-movement mode)
+```
+
+```md
+The icons and gray texts seem off, the key names are also not aligned anymore,
+also although I'm not sure it is introduced in the changes this time, the
+background is also not half-transparent anymore.
+
+also, no need for icon labels.
+
+<!-- screenshot -->
+```
