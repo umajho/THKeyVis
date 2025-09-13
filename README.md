@@ -153,7 +153,31 @@ but when the app is opened, it is not minimum in height.
 Also:
 
 - please don't make the icons gray, just use the same color as the key names.
-- please make the gray text can be a little larger, and should be capitalized.
-  It seems that gray is not very accessible, consider changing it to another
-  secondary color.
+- please make the gray text a little larger, and should be capitalized. It seems
+  that gray is not very accessible, consider changing it to another secondary
+  color.
+```
+
+### ⑩
+
+#### Prompt
+
+```md
+Is it possible to determine the key names dynamically by the layout the user is
+using? (If it is possible, it should also be reactive to the user's layout
+switching.)
+```
+
+```md
+The key names didn't change? they still seem to be hardcoded.
+```
+
+```md
+The key names become `aprg/kfuy` for english layouts (colemak/ABC Extended), and
+become `?`s for CJK layouts.
+```
+
+```md
+The key names are correct now. But for some reason, there is a small chance that
+when I switch layouts, the app doesn't notice the layout change.
 ```

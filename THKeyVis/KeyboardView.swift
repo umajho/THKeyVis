@@ -11,6 +11,14 @@ struct KeyboardView: View {
     
     var body: some View {
         VStack(spacing: 15) {
+            // Layout indicator
+            HStack {
+                Text("Layout: \(keyMonitor.currentLayoutName)")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.secondary)
+                Spacer()
+            }
+            
             // Permission warning banner
             if !keyMonitor.hasAccessibilityPermission {
                 HStack {
@@ -50,28 +58,28 @@ struct KeyboardView: View {
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
-                        keyName: "A",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 0), // A position
                         isPressed: keyMonitor.pressedKeys.contains("a"),
                         isDisabled: true,
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "a",
                     )
                     KeyView(
-                        keyName: "R",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 1), // S position (R in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("r"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "s",
                         iconName: "arrow.clockwise"
                     )
                     KeyView(
-                        keyName: "S",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 2), // D position (S in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("s"),
                         isDisabled: true,
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "d"
                     )
                     KeyView(
-                        keyName: "T",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 3), // F position (T in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("t"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "f",
@@ -100,28 +108,28 @@ struct KeyboardView: View {
                 // First row: N E I O
                 HStack(spacing: 8) {
                     KeyView(
-                        keyName: "N",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 38), // J position (N in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("n"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "j",
                         iconName: "arrow.left"
                     )
                     KeyView(
-                        keyName: "E",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 40), // K position (E in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("e"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "k",
                         iconName: "arrow.up"
                     )
                     KeyView(
-                        keyName: "I",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 37), // L position (I in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("i"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "l",
                         iconName: "arrow.down"
                     )
                     KeyView(
-                        keyName: "O",
+                        keyName: keyMonitor.getCharacterForUIKey(keyCode: 41), // ; position (O in Colemak)
                         isPressed: keyMonitor.pressedKeys.contains("o"),
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: ";",

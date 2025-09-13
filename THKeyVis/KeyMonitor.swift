@@ -7,14 +7,21 @@ import Cocoa
 import SwiftUI
 import ApplicationServices
 import Foundation
+import Carbon
 
 class KeyMonitor: ObservableObject {
     @Published var pressedKeys = Set<String>()
     @Published var hasAccessibilityPermission = false
+    @Published var currentLayoutName = "Unknown"
     private var eventTap: CFMachPort?
     private var permissionTimer: Timer?
+    private var layoutCheckTimer: Timer?
+    private var inputSource: TISInputSource?
+    private var lastLayoutName: String = ""
     
     init() {
+        setupInputSourceMonitoring()
+        updateCurrentInputSource()
         checkAndRequestPermission()
         startPermissionMonitoring()
     }
@@ -24,6 +31,10 @@ class KeyMonitor: ObservableObject {
             CFMachPortInvalidate(eventTap)
         }
         permissionTimer?.invalidate()
+        layoutCheckTimer?.invalidate()
+        
+        // Remove all notification observers
+        DistributedNotificationCenter.default().removeObserver(self)
     }
     
     private func checkAndRequestPermission() {
@@ -120,22 +131,150 @@ class KeyMonitor: ObservableObject {
         }
     }
     
+    private func setupInputSourceMonitoring() {
+        // Listen for multiple types of input source changes for better reliability
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(inputSourceChanged),
+            name: NSNotification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String),
+            object: nil
+        )
+        
+        // Also listen for input source enabled/disabled changes
+        DistributedNotificationCenter.default().addObserver(
+            self,
+            selector: #selector(inputSourceChanged),
+            name: NSNotification.Name(kTISNotifyEnabledKeyboardInputSourcesChanged as String),
+            object: nil
+        )
+        
+        // Set up a periodic check as fallback for missed notifications
+        layoutCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            self.checkForLayoutChange()
+        }
+    }
+    
+    @objc private func inputSourceChanged() {
+        updateCurrentInputSource()
+    }
+    
+    private func checkForLayoutChange() {
+        // Periodic check in case notifications are missed
+        let currentSource = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
+        
+        if let nameRef = TISGetInputSourceProperty(currentSource, kTISPropertyLocalizedName) {
+            let name = Unmanaged<CFString>.fromOpaque(nameRef).takeUnretainedValue() as String
+            
+            if name != lastLayoutName {
+                print("Layout change detected via periodic check: \(lastLayoutName) -> \(name)")
+                inputSource = currentSource
+                DispatchQueue.main.async {
+                    self.currentLayoutName = name
+                }
+                lastLayoutName = name
+            }
+        }
+    }
+    
+    private func updateCurrentInputSource() {
+        inputSource = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
+        
+        // Get the layout name for display
+        if let inputSource = inputSource {
+            let nameRef = TISGetInputSourceProperty(inputSource, kTISPropertyLocalizedName)
+            if let nameRef = nameRef {
+                let name = Unmanaged<CFString>.fromOpaque(nameRef).takeUnretainedValue() as String
+                DispatchQueue.main.async {
+                    self.currentLayoutName = name
+                }
+                lastLayoutName = name
+                print("Keyboard layout changed to: \(name)")
+            }
+        }
+    }
+    
     private func keyCodeToString(keyCode: Int) -> String {
-        // Map physical key codes to Colemak layout characters
+        // Handle special keys that don't have character representation
         switch keyCode {
         case 57: return "esc"    // Caps Lock (remapped to Esc in system prefs)
-        case 53: return "esc"    // Actual Esc key (fallback)
-        case 0: return "a"       // Physical A key → Colemak A
-        case 1: return "r"       // Physical S key → Colemak R
-        case 2: return "s"       // Physical D key → Colemak S  
-        case 3: return "t"       // Physical F key → Colemak T
+        case 53: return "esc"    // Actual Esc key
         case 51: return "backspace" // Backspace
-        case 38: return "n"      // Physical J key → Colemak N
-        case 40: return "e"      // Physical K key → Colemak E
-        case 37: return "i"      // Physical L key → Colemak I
-        case 41: return "o"      // Physical ; key → Colemak O
         case 49: return "space"  // Space
+        default: break
+        }
+        
+        // Get the actual character from the current keyboard layout
+        if let character = getCharacterForKeyCode(keyCode: keyCode) {
+            return character.lowercased()
+        }
+        
+        // Fallback to our static mapping for our specific keys
+        switch keyCode {
+        case 0: return "a"       
+        case 1: return "r"       
+        case 2: return "s"       
+        case 3: return "t"       
+        case 38: return "n"      
+        case 40: return "e"      
+        case 37: return "i"      
+        case 41: return "o"      
         default: return "unknown"
+        }
+    }
+    
+    private func getCharacterForKeyCode(keyCode: Int) -> String? {
+        guard let inputSource = inputSource else { return nil }
+        
+        // Get the keyboard layout data
+        guard let layoutDataRef = TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData) else {
+            return nil
+        }
+        
+        let layoutData = Unmanaged<CFData>.fromOpaque(layoutDataRef).takeUnretainedValue()
+        let keyboardLayoutPtr = CFDataGetBytePtr(layoutData)
+        
+        var deadKeyState: UInt32 = 0
+        var actualStringLength = 0
+        var unicodeString = [UniChar](repeating: 0, count: 4)
+        
+        let status = UCKeyTranslate(
+            UnsafePointer<UCKeyboardLayout>(OpaquePointer(keyboardLayoutPtr)),
+            UInt16(keyCode),
+            UInt16(kUCKeyActionDisplay),
+            0, // no modifier keys
+            UInt32(LMGetKbdType()),
+            OptionBits(kUCKeyTranslateNoDeadKeysBit),
+            &deadKeyState,
+            4,
+            &actualStringLength,
+            &unicodeString
+        )
+        
+        guard status == noErr && actualStringLength > 0 else {
+            return nil
+        }
+        
+        return String(utf16CodeUnits: unicodeString, count: actualStringLength)
+    }
+    
+    // Public method to get character for specific key codes used in the UI
+    func getCharacterForUIKey(keyCode: Int) -> String {
+        // Try to get the character from the current layout
+        if let character = getCharacterForKeyCode(keyCode: keyCode), !character.isEmpty {
+            return character
+        }
+        
+        // Fallback to physical key position labels for CJK and other complex layouts
+        switch keyCode {
+        case 0: return "A"  // A position
+        case 1: return "S"  // S position  
+        case 2: return "D"  // D position
+        case 3: return "F"  // F position
+        case 38: return "J" // J position
+        case 40: return "K" // K position
+        case 37: return "L" // L position
+        case 41: return ";" // ; position
+        default: return "?"
         }
     }
 }
