@@ -24,6 +24,24 @@ class KeyMonitor: ObservableObject {
         updateCurrentInputSource()
         checkAndRequestPermission()
         startPermissionMonitoring()
+        setupApplicationNotifications()
+    }
+    
+    private func setupApplicationNotifications() {
+        // Listen for app becoming active (after permission dialogs, etc.)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationDidBecomeActive),
+            name: NSApplication.didBecomeActiveNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func applicationDidBecomeActive() {
+        // Check for layout changes when app becomes active (e.g., after permission dialogs)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.checkForLayoutChange()
+        }
     }
     
     deinit {
@@ -35,6 +53,7 @@ class KeyMonitor: ObservableObject {
         
         // Remove all notification observers
         DistributedNotificationCenter.default().removeObserver(self)
+        NotificationCenter.default.removeObserver(self)
     }
     
     private func checkAndRequestPermission() {
@@ -64,6 +83,8 @@ class KeyMonitor: ObservableObject {
                 // If permission was just granted, setup key monitoring
                 if !wasEnabled && accessEnabled {
                     self.setupKeyTap()
+                    // Also check for layout changes that might have occurred while permission dialogs were showing
+                    self.checkForLayoutChange()
                 }
                 // If permission was revoked, clean up
                 else if wasEnabled && !accessEnabled {
@@ -73,6 +94,9 @@ class KeyMonitor: ObservableObject {
                     }
                     self.pressedKeys.removeAll()
                 }
+                
+                // Always check layout when permission state changes (dialogs may affect input source)
+                self.checkForLayoutChange()
             }
         }
     }

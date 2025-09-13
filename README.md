@@ -9,7 +9,6 @@ is not very common:
   handle macOS permissions, so I gave up and turned to swift+swiftUI, which
   means this project is worthless for you if you are on other OSs.)
 - ergodox-like keyboard.
-- colemak keyboard layout.
 
 ## Copilot Agent Histroy
 
@@ -68,7 +67,7 @@ Window control buttons (`[x]` and `[-]`) don't work, please fix it.
 
 ### 4
 
-#### Prompt
+#### Prompts
 
 ```md
 Write a justfile for `build-debug`, `build-release`, `run-debug`, and
@@ -115,7 +114,7 @@ Note: you need to run `just build-*` before `just run-*`.
 
 ### 8
 
-#### Prompt
+#### Prompts
 
 ```md
 Now:
@@ -160,7 +159,7 @@ Also:
 
 ### ⑩
 
-#### Prompt
+#### Prompts
 
 ```md
 Is it possible to determine the key names dynamically by the layout the user is
@@ -180,4 +179,29 @@ become `?`s for CJK layouts.
 ```md
 The key names are correct now. But for some reason, there is a small chance that
 when I switch layouts, the app doesn't notice the layout change.
+```
+
+### 11
+
+#### Prompts
+
+```md
+- Don't show the blue small text if it is the same with the key name.
+- Make the window always be the minimum size and unresizable.
+```
+
+```md
+The window is too small that it breaks the layout. Can you find another
+approach, for example, open the window the old way and then shrink the window,
+and then disable the resize functionality?
+
+<!--screenshot-->
+```
+
+```md
+I can still resize the window. And now the `Layout: xxx` texts are duplicated.
+(please keep the old one.)
+
+I also forgot to mention that you should account for the layout change by things
+like the “Accessibility permission required” alert.
 ```

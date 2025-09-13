@@ -11,10 +11,11 @@ struct ContentView: View {
     
     var body: some View {
         KeyboardView(keyMonitor: keyMonitor)
+            .padding()
             .background(.clear)
             .onAppear {
-                // Ensure window stays on top
-                windowManager.bringToFront()
+                // Setup window after content appears
+                windowManager.setupWindow()
             }
     }
 }

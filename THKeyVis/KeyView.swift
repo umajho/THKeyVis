@@ -36,8 +36,8 @@ struct KeyView: View {
                 .frame(width: width, height: height)
             
             VStack(spacing: 2) {
-                // QWERTY label at top (if provided)
-                if let qwertyLabel = qwertyLabel {
+                // QWERTY label at top (if provided and different from key name)
+                if let qwertyLabel = qwertyLabel, qwertyLabel.uppercased() != keyName.uppercased() {
                     HStack {
                         Text(qwertyLabel.uppercased())
                             .font(.system(size: 10, weight: .medium))

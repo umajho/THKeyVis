@@ -23,9 +23,6 @@ class WindowManager: NSObject, ObservableObject, NSWindowDelegate {
         // Set window level to always be on top (highest level)
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
         
-        // Configure window style to keep controls but prevent resizing
-        window.styleMask = [.titled, .closable, .miniaturizable]
-        
         // Set window properties
         window.isOpaque = false
         window.backgroundColor = NSColor.clear
@@ -41,6 +38,23 @@ class WindowManager: NSObject, ObservableObject, NSWindowDelegate {
         window.hidesOnDeactivate = false
         window.canHide = true // Allow hiding with minimize button
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        
+        // Let the window size naturally first, then adjust and lock it
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            // Get the natural content size
+            let naturalSize = window.contentView?.fittingSize ?? NSSize(width: 450, height: 200)
+            
+            // Set a reasonable size that fits the content
+            let targetSize = NSSize(width: max(naturalSize.width, 450), height: max(naturalSize.height, 200))
+            window.setContentSize(targetSize)
+            
+            // Now configure window style to prevent resizing
+            window.styleMask = [.titled, .closable, .miniaturizable]
+            
+            // Lock the size
+            window.minSize = targetSize
+            window.maxSize = targetSize
+        }
         
         // Position window at bottom-center for gaming visibility
         if let screen = NSScreen.main {
@@ -64,5 +78,10 @@ class WindowManager: NSObject, ObservableObject, NSWindowDelegate {
         // Terminate the application when the close button is clicked
         NSApplication.shared.terminate(nil)
         return true
+    }
+    
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        // Prevent any resizing by returning the current size
+        return sender.frame.size
     }
 }
