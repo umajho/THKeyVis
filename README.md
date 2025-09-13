@@ -214,3 +214,16 @@ like the “Accessibility permission required” alert.
 I found that when the permission is revoked, the app still thinks it has the
 permission, please fix that.
 ```
+
+### 13
+
+#### Prompts
+
+```md
+Please set the title to `THKeyVis (https://github.com/umajho/THKeyVis)`.
+```
+
+```md
+Weird, titlear is empty. I thought the title bar were always set to an empty
+text. it seems that there is a bug that makes the title not showing the text.
+```

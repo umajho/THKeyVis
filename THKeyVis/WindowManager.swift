@@ -28,8 +28,8 @@ class WindowManager: NSObject, ObservableObject, NSWindowDelegate {
         window.backgroundColor = NSColor.clear
         window.hasShadow = true
         window.titlebarAppearsTransparent = true
-        window.titleVisibility = .hidden
-        window.title = "THKeyVis"
+        window.titleVisibility = .visible
+        window.title = "THKeyVis (https://github.com/umajho/THKeyVis)"
         
         // Set window delegate to handle close events
         window.delegate = self
