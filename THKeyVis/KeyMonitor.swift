@@ -13,6 +13,7 @@ class KeyMonitor: ObservableObject {
     @Published var pressedKeys = Set<String>()
     @Published var hasAccessibilityPermission = false
     @Published var currentLayoutName = "Unknown"
+    @Published var isRemapModeEnabled = false
     private var eventTap: CFMachPort?
     private var permissionTimer: Timer?
     private var layoutCheckTimer: Timer?
@@ -163,7 +164,7 @@ class KeyMonitor: ObservableObject {
             callback: { (proxy, type, event, refcon) -> Unmanaged<CGEvent>? in
                 if let refcon = refcon {
                     let keyMonitor = Unmanaged<KeyMonitor>.fromOpaque(refcon).takeUnretainedValue()
-                    keyMonitor.handleKeyEvent(type: type, event: event)
+                    return keyMonitor.processKeyEvent(type: type, event: event)
                 }
                 return Unmanaged.passRetained(event)
             },
@@ -212,6 +213,30 @@ class KeyMonitor: ObservableObject {
                 self.pressedKeys.removeAll()
             }
         }
+    }
+    
+    private func processKeyEvent(type: CGEventType, event: CGEvent) -> Unmanaged<CGEvent>? {
+        let originalKeyCode = event.getIntegerValueField(.keyboardEventKeycode)
+        
+        // Always update our internal state for visualization
+        handleKeyEvent(type: type, event: event)
+        
+        // Check if this key should be remapped
+        if let remappedKeyCode = getRemappedKeyCode(for: Int(originalKeyCode)) {
+            // Create a new event with the remapped key code
+            if let newEvent = CGEvent(keyboardEventSource: nil, 
+                                    virtualKey: CGKeyCode(remappedKeyCode), 
+                                    keyDown: type == .keyDown) {
+                
+                // Copy any modifier flags from the original event
+                newEvent.flags = event.flags
+                print("🔄 Remapping key: \(originalKeyCode) -> \(remappedKeyCode)")
+                return Unmanaged.passRetained(newEvent)
+            }
+        }
+        
+        // No remapping needed, pass through original event
+        return Unmanaged.passRetained(event)
     }
     
     private func handleKeyEvent(type: CGEventType, event: CGEvent) {
@@ -374,6 +399,23 @@ class KeyMonitor: ObservableObject {
         case 37: return "L" // L position
         case 41: return ";" // ; position
         default: return "?"
+        }
+    }
+    
+    // Map original key codes to remapped key codes based on the remap settings
+    private func getRemappedKeyCode(for originalKeyCode: Int) -> Int? {
+        guard isRemapModeEnabled else { return nil }
+        
+        switch originalKeyCode {
+        case 1:  return 15  // S position -> R position (QWERTY S -> R)  
+        case 3:  return 7   // F position -> X position (QWERTY F -> X)
+        case 38: return 123 // J position -> Left Arrow
+        case 40: return 126 // K position -> Up Arrow  
+        case 37: return 125 // L position -> Down Arrow
+        case 41: return 124 // ; position -> Right Arrow
+        case 51: return 6   // Backspace -> Z position
+        case 49: return 56  // Space -> Left Shift
+        default: return nil
         }
     }
 }

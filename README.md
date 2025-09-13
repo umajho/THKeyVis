@@ -302,3 +302,8 @@ It seems the font size (line height?) of the icon line affects the layout, which
 makes the layout between enabling/disabling the remap mode inconsistent. Please
 fix that.
 ```
+
+```md
+Now, the UI part is done, you should start implementing the remapping
+functionality.
+```

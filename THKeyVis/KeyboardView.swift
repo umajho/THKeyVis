@@ -8,11 +8,10 @@ import AppKit
 
 struct KeyboardView: View {
     @ObservedObject var keyMonitor: KeyMonitor
-    @State private var isRemapModeEnabled = false
     
     // Helper function to get remapped key name
     private func getRemappedKeyName(for qwertyLabel: String?) -> String? {
-        guard isRemapModeEnabled, let qwertyLabel = qwertyLabel else { return nil }
+        guard keyMonitor.isRemapModeEnabled, let qwertyLabel = qwertyLabel else { return nil }
         
         switch qwertyLabel.lowercased() {
         case "s": return "R"
@@ -29,7 +28,7 @@ struct KeyboardView: View {
     
     // Helper function to check if key should show remap
     private func shouldShowRemap(for qwertyLabel: String?) -> Bool {
-        guard isRemapModeEnabled, let qwertyLabel = qwertyLabel else { return false }
+        guard keyMonitor.isRemapModeEnabled, let qwertyLabel = qwertyLabel else { return false }
         return ["s", "f", "j", "k", "l", ";", "backspace", "space"].contains(qwertyLabel.lowercased())
     }
     
@@ -90,7 +89,7 @@ struct KeyboardView: View {
                     Text("Remap Mode")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.secondary)
-                    Toggle("", isOn: $isRemapModeEnabled)
+                    Toggle("", isOn: $keyMonitor.isRemapModeEnabled)
                         .toggleStyle(SwitchToggleStyle(tint: .blue))
                         .scaleEffect(0.7)
                 }
