@@ -21,7 +21,6 @@ struct THKeyVisApp: App {
                     windowManager.setupWindow()
                 }
         }
-        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
     }
 }

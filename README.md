@@ -42,3 +42,11 @@ UI design:
 - If the `Accessibility` persimmsion is not granted, the UI should warn about
   that, and the icons should all be disabled.
 ```
+
+### 3
+
+#### Prompt
+
+```md
+Window control buttons (`[x]` and `[-]`) don't work, please fix it.
+```

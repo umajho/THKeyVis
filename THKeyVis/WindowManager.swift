@@ -25,9 +25,8 @@ class WindowManager: NSObject, ObservableObject {
         // Set window level to always be on top (highest level)
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
         
-        // Make window non-activating (won't steal focus)
-        window.styleMask.remove(.resizable)
-        window.styleMask.insert(.nonactivatingPanel)
+        // Configure window style to keep controls but prevent resizing
+        window.styleMask = [.titled, .closable, .miniaturizable]
         
         // Set window properties
         window.isOpaque = false
@@ -35,10 +34,11 @@ class WindowManager: NSObject, ObservableObject {
         window.hasShadow = true
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
+        window.title = "THKeyVis"
         
         // Make window stay on top even when other apps are focused
         window.hidesOnDeactivate = false
-        window.canHide = false
+        window.canHide = true // Allow hiding with minimize button
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         
         // Position window at bottom-center for gaming visibility
