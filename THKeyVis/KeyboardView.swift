@@ -52,16 +52,16 @@ struct KeyboardView: View {
                     KeyView(
                         keyName: "A",
                         isPressed: keyMonitor.pressedKeys.contains("a"),
+                        isDisabled: true,
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         qwertyLabel: "a",
-                        iconName: "arrow.clockwise"
                     )
                     KeyView(
                         keyName: "R",
                         isPressed: keyMonitor.pressedKeys.contains("r"),
-                        isDisabled: true,
                         isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
-                        qwertyLabel: "s"
+                        qwertyLabel: "s",
+                        iconName: "arrow.clockwise"
                     )
                     KeyView(
                         keyName: "S",
