@@ -21,7 +21,7 @@ struct KeyboardView: View {
         case "l": return "↓"
         case ";": return "→"
         case "backspace": return "Z"
-        case "space": return "⇧"
+        case "space": return "⇧ (broken)"
         default: return nil
         }
     }
@@ -165,10 +165,18 @@ struct KeyboardView: View {
                     )
                 }
                 
-                // Second row: BACKSPACE (aligned with A-T)
-                HStack {
-                    Spacer()
-                        .frame(width: 58) // ESC width + spacing
+                // Second row: LEFT SHIFT (only in remap mode) and BACKSPACE
+                HStack(spacing: 8) {
+                    if keyMonitor.isRemapModeEnabled {
+                        KeyView(
+                            keyName: "⇧",
+                            isPressed: keyMonitor.pressedKeys.contains("leftshift"),
+                            isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
+                        )
+                    } else {
+                        Spacer()
+                            .frame(width: 50) // Same width as ESC key when not showing shift
+                    }
                     
                     KeyView(
                         keyName: "BACKSPACE",

@@ -336,3 +336,36 @@ longer mapped. For example, while holding the space key, when I pressed `J` (in
 QWERTY), instead of remapping it to be the left arrow, it bceame the uppercased
 `N` (since I'm using colemak).
 ```
+
+##### Part 5
+
+```md
+This solution works well in the VSCode Editor, is broken in the VSCode terminal,
+and is half-broken (laggy) in the game I tested. Well, maybe simulating modifier
+keys is not a good idea.
+
+- add `(broken)` after the shift icon in the remap mode.
+- add a square representing the left shift below the `esc` square:
+  - it should only appear in remap mode.
+  - it should be as large as the `esc` square. Since `LEFT SHIFT`, `LSHIFT`,
+    `SHIFT` are all too long, use an icon instead for the key's name.
+```
+
+```md
+- don't add `(broken)` around the “Remap Mode” label.
+- pressing the shift key doesn't reflect on the UI (on the remap mode). This
+  should be fixed.
+- The shift icons in the shift square are duplicated.
+```
+
+```md
+- You should keep the upper part of the shift icon, instead of the lower part.
+- holding the left shift key still doesn't work.
+```
+
+```md
+Holding shift works now.
+
+But for the first issue: It is not about make the icon filled, what I mean is
+that the key name should be the icon, and the icon line should be empty.
+```

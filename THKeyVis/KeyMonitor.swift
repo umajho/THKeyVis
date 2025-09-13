@@ -155,7 +155,7 @@ class KeyMonitor: ObservableObject {
             return
         }
         
-        let eventMask = (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.keyUp.rawValue)
+        let eventMask = (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.keyUp.rawValue) | (1 << CGEventType.flagsChanged.rawValue)
         
         eventTap = CGEvent.tapCreate(
             tap: .cgSessionEventTap,
@@ -222,6 +222,11 @@ class KeyMonitor: ObservableObject {
         // Always update our internal state for visualization
         handleKeyEvent(type: type, event: event)
         
+        // Handle modifier key events (flagsChanged) - pass them through without modification
+        if type == .flagsChanged {
+            return Unmanaged.passRetained(event)
+        }
+        
         // Special case: Handle space -> shift remapping
         if isRemapModeEnabled && originalKeyCode == 49 { // Space key
             if type == .keyDown {
@@ -287,6 +292,20 @@ class KeyMonitor: ObservableObject {
                 self.pressedKeys.insert(keyString)
             case .keyUp:
                 self.pressedKeys.remove(keyString)
+            case .flagsChanged:
+                // Handle modifier keys (Shift, Ctrl, Cmd, etc.)
+                let flags = event.flags
+                
+                // Handle left shift (key code 56)
+                if keyCode == 56 {
+                    if flags.contains(.maskShift) {
+                        self.pressedKeys.insert("leftshift")
+                        print("🔄 Left shift pressed")
+                    } else {
+                        self.pressedKeys.remove("leftshift")
+                        print("🔄 Left shift released")
+                    }
+                }
             default:
                 break
             }
@@ -362,6 +381,7 @@ class KeyMonitor: ObservableObject {
         case 53: return "esc"    // Actual Esc key
         case 51: return "backspace" // Backspace
         case 49: return "space"  // Space
+        case 56: return "leftshift" // Left Shift
         default: break
         }
         
