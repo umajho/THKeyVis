@@ -6,37 +6,72 @@
 //
 
 import SwiftUI
+import AppKit
 
 struct KeyboardView: View {
     @ObservedObject var keyMonitor: KeyMonitor
     
     var body: some View {
-        HStack(spacing: 40) {
+        VStack(spacing: 15) {
+            // Permission warning banner
+            if !keyMonitor.hasAccessibilityPermission {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    Text("Accessibility permission required")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.orange)
+                    Spacer()
+                    Button("Open Settings") {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(.blue)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(.orange.opacity(0.1))
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(.orange.opacity(0.3), lineWidth: 1)
+                )
+            }
+            
+            // Keyboard layout
+            HStack(spacing: 40) {
             // Left side
             VStack(spacing: 10) {
                 // First row: ESC A R S T
                 HStack(spacing: 8) {
                     KeyView(
                         keyName: "ESC",
-                        isPressed: keyMonitor.pressedKeys.contains("esc")
+                        isPressed: keyMonitor.pressedKeys.contains("esc"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
                         keyName: "A",
-                        isPressed: keyMonitor.pressedKeys.contains("a")
+                        isPressed: keyMonitor.pressedKeys.contains("a"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
                         keyName: "R",
                         isPressed: keyMonitor.pressedKeys.contains("r"),
-                        isDisabled: true
+                        isDisabled: true,
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
                         keyName: "S",
                         isPressed: keyMonitor.pressedKeys.contains("s"),
-                        isDisabled: true
+                        isDisabled: true,
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
                         keyName: "T",
-                        isPressed: keyMonitor.pressedKeys.contains("t")
+                        isPressed: keyMonitor.pressedKeys.contains("t"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                 }
                 
@@ -48,6 +83,7 @@ struct KeyboardView: View {
                     KeyView(
                         keyName: "⌫",
                         isPressed: keyMonitor.pressedKeys.contains("backspace"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                         width: 200, // Width to align with A through T
                         height: 50
                     )
@@ -60,19 +96,23 @@ struct KeyboardView: View {
                 HStack(spacing: 8) {
                     KeyView(
                         keyName: "N",
-                        isPressed: keyMonitor.pressedKeys.contains("n")
+                        isPressed: keyMonitor.pressedKeys.contains("n"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
                         keyName: "E",
-                        isPressed: keyMonitor.pressedKeys.contains("e")
+                        isPressed: keyMonitor.pressedKeys.contains("e"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
                         keyName: "I",
-                        isPressed: keyMonitor.pressedKeys.contains("i")
+                        isPressed: keyMonitor.pressedKeys.contains("i"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                     KeyView(
                         keyName: "O",
-                        isPressed: keyMonitor.pressedKeys.contains("o")
+                        isPressed: keyMonitor.pressedKeys.contains("o"),
+                        isPermissionDisabled: !keyMonitor.hasAccessibilityPermission
                     )
                 }
                 
@@ -80,9 +120,11 @@ struct KeyboardView: View {
                 KeyView(
                     keyName: "SPACE",
                     isPressed: keyMonitor.pressedKeys.contains("space"),
+                    isPermissionDisabled: !keyMonitor.hasAccessibilityPermission,
                     width: 200, // Width to span across N-O
                     height: 50
                 )
+            }
             }
         }
         .padding(20)

@@ -11,13 +11,15 @@ struct KeyView: View {
     let keyName: String
     let isPressed: Bool
     let isDisabled: Bool
+    let isPermissionDisabled: Bool
     let width: CGFloat
     let height: CGFloat
     
-    init(keyName: String, isPressed: Bool, isDisabled: Bool = false, width: CGFloat = 50, height: CGFloat = 50) {
+    init(keyName: String, isPressed: Bool, isDisabled: Bool = false, isPermissionDisabled: Bool = false, width: CGFloat = 50, height: CGFloat = 50) {
         self.keyName = keyName
         self.isPressed = isPressed
         self.isDisabled = isDisabled
+        self.isPermissionDisabled = isPermissionDisabled
         self.width = width
         self.height = height
     }
@@ -39,7 +41,9 @@ struct KeyView: View {
     }
     
     private var backgroundColor: Color {
-        if isDisabled {
+        if isPermissionDisabled {
+            return .red.opacity(0.2)
+        } else if isDisabled {
             return .gray.opacity(0.3)
         } else if isPressed {
             return .blue.opacity(0.7)
@@ -49,7 +53,9 @@ struct KeyView: View {
     }
     
     private var borderColor: Color {
-        if isDisabled {
+        if isPermissionDisabled {
+            return .red.opacity(0.6)
+        } else if isDisabled {
             return .gray.opacity(0.5)
         } else if isPressed {
             return .blue
@@ -59,7 +65,9 @@ struct KeyView: View {
     }
     
     private var textColor: Color {
-        if isDisabled {
+        if isPermissionDisabled {
+            return .red.opacity(0.7)
+        } else if isDisabled {
             return .gray.opacity(0.6)
         } else if isPressed {
             return .white
@@ -74,6 +82,7 @@ struct KeyView: View {
         KeyView(keyName: "A", isPressed: false)
         KeyView(keyName: "S", isPressed: true)
         KeyView(keyName: "R", isPressed: false, isDisabled: true)
+        KeyView(keyName: "T", isPressed: false, isPermissionDisabled: true)
         KeyView(keyName: "SPACE", isPressed: false, width: 120, height: 50)
     }
     .padding()

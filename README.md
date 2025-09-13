@@ -31,3 +31,14 @@ UI design:
   - keys on the right, second row: `[space]`.
 - margins around keys.
 ```
+
+### 2
+
+#### Prompt
+
+```md
+- it should work after the `Accessibility` permission is granted immediaately
+  without restart being involved.
+- If the `Accessibility` persimmsion is not granted, the UI should warn about
+  that, and the icons should all be disabled.
+```

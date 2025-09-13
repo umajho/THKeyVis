@@ -8,32 +8,77 @@
 import Cocoa
 import SwiftUI
 import ApplicationServices
+import Foundation
 
 class KeyMonitor: ObservableObject {
     @Published var pressedKeys = Set<String>()
+    @Published var hasAccessibilityPermission = false
     private var eventTap: CFMachPort?
+    private var permissionTimer: Timer?
     
     init() {
-        requestInputMonitoringPermission()
-        setupKeyTap()
+        checkAndRequestPermission()
+        startPermissionMonitoring()
     }
     
     deinit {
         if let eventTap = eventTap {
             CFMachPortInvalidate(eventTap)
         }
+        permissionTimer?.invalidate()
     }
     
-    private func requestInputMonitoringPermission() {
+    private func checkAndRequestPermission() {
         let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true]
         let accessEnabled = AXIsProcessTrustedWithOptions(options)
         
-        if !accessEnabled {
-            print("Input monitoring permission is required. Please grant permission in System Preferences.")
+        DispatchQueue.main.async {
+            self.hasAccessibilityPermission = accessEnabled
+        }
+        
+        if accessEnabled {
+            setupKeyTap()
+        } else {
+            print("Accessibility permission is required. Please grant permission in System Preferences.")
+        }
+    }
+    
+    private func startPermissionMonitoring() {
+        // Check permission status every 2 seconds
+        permissionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+            let accessEnabled = AXIsProcessTrusted()
+            
+            DispatchQueue.main.async {
+                let wasEnabled = self.hasAccessibilityPermission
+                self.hasAccessibilityPermission = accessEnabled
+                
+                // If permission was just granted, setup key monitoring
+                if !wasEnabled && accessEnabled {
+                    self.setupKeyTap()
+                }
+                // If permission was revoked, clean up
+                else if wasEnabled && !accessEnabled {
+                    if let eventTap = self.eventTap {
+                        CFMachPortInvalidate(eventTap)
+                        self.eventTap = nil
+                    }
+                    self.pressedKeys.removeAll()
+                }
+            }
         }
     }
     
     private func setupKeyTap() {
+        // Clean up existing event tap if it exists
+        if let existingEventTap = eventTap {
+            CFMachPortInvalidate(existingEventTap)
+        }
+        
+        guard hasAccessibilityPermission else {
+            print("Cannot setup key tap: Accessibility permission not granted")
+            return
+        }
+        
         let eventMask = (1 << CGEventType.keyDown.rawValue) | (1 << CGEventType.keyUp.rawValue)
         
         eventTap = CGEvent.tapCreate(
@@ -55,6 +100,9 @@ class KeyMonitor: ObservableObject {
             let runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
             CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
             CGEvent.tapEnable(tap: eventTap, enable: true)
+            print("Key monitoring enabled successfully")
+        } else {
+            print("Failed to create event tap")
         }
     }
     
