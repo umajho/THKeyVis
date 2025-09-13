@@ -269,6 +269,8 @@ parens) should just be regular texts.
 
 #### Prompts
 
+##### Part 1
+
 ```md
 Please implement “remap mode”:
 
@@ -303,10 +305,14 @@ makes the layout between enabling/disabling the remap mode inconsistent. Please
 fix that.
 ```
 
+##### Part 2
+
 ```md
 Now, the UI part is done, you should start implementing the remapping
 functionality.
 ```
+
+##### Part 3
 
 ```md
 Hmm, it doesn't seem that space->lshift works.
@@ -315,4 +321,18 @@ Hmm, it doesn't seem that space->lshift works.
 ```md
 Please stop. I don't think simply mapping the shift key using keycode will ever
 work. You know that the shift key is a modifier key right?
+```
+
+##### Part 4
+
+```md
+The remapping for the shift key works until I pressed any other key while
+holding the space key.
+```
+
+```md
+The implementation is broken: When I held the shift key, other keys are no
+longer mapped. For example, while holding the space key, when I pressed `J` (in
+QWERTY), instead of remapping it to be the left arrow, it bceame the uppercased
+`N` (since I'm using colemak).
 ```

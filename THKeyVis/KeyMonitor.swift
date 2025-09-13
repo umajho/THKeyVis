@@ -19,6 +19,7 @@ class KeyMonitor: ObservableObject {
     private var layoutCheckTimer: Timer?
     private var inputSource: TISInputSource?
     private var lastLayoutName: String = ""
+    private var isSpaceActingAsShift = false
     
     init() {
         setupInputSourceMonitoring()
@@ -223,34 +224,52 @@ class KeyMonitor: ObservableObject {
         
         // Special case: Handle space -> shift remapping
         if isRemapModeEnabled && originalKeyCode == 49 { // Space key
-            // Create a shift modifier event instead of a regular key event
-            if let shiftEvent = CGEvent(keyboardEventSource: nil,
-                                      virtualKey: 56, // Left shift key code
-                                      keyDown: type == .keyDown) {
-                
-                // Set the shift modifier flag
-                if type == .keyDown {
-                    shiftEvent.flags.insert(.maskShift)
-                } else {
-                    shiftEvent.flags.remove(.maskShift)
-                }
-                
-                print("🔄 Remapping space to shift: \(type == .keyDown ? "down" : "up")")
-                return Unmanaged.passRetained(shiftEvent)
+            if type == .keyDown {
+                isSpaceActingAsShift = true
+                print("🔄 Space acting as shift: ON")
+            } else {
+                isSpaceActingAsShift = false
+                print("🔄 Space acting as shift: OFF")
             }
+            
+            // Suppress the original space event completely
+            return nil
         }
         
-        // Check if this key should be remapped (regular keys)
-        if let remappedKeyCode = getRemappedKeyCode(for: Int(originalKeyCode)) {
-            // Create a new event with the remapped key code
-            if let newEvent = CGEvent(keyboardEventSource: nil, 
-                                    virtualKey: CGKeyCode(remappedKeyCode), 
-                                    keyDown: type == .keyDown) {
-                
-                // Copy any modifier flags from the original event
-                newEvent.flags = event.flags
+        // For other keys when remapping is enabled
+        if isRemapModeEnabled {
+            var finalKeyCode = Int(originalKeyCode)
+            var shouldCreateNewEvent = false
+            
+            // First, check if this key should be remapped
+            if let remappedKeyCode = getRemappedKeyCode(for: Int(originalKeyCode)) {
+                finalKeyCode = remappedKeyCode
+                shouldCreateNewEvent = true
                 print("🔄 Remapping key: \(originalKeyCode) -> \(remappedKeyCode)")
-                return Unmanaged.passRetained(newEvent)
+            }
+            
+            // If space is acting as shift, we also need to create a new event to add the modifier
+            if isSpaceActingAsShift {
+                shouldCreateNewEvent = true
+                print("🔄 Adding shift modifier to key: \(finalKeyCode)")
+            }
+            
+            // Create new event if needed (either remapped key or modifier change)
+            if shouldCreateNewEvent {
+                if let newEvent = CGEvent(keyboardEventSource: nil, 
+                                        virtualKey: CGKeyCode(finalKeyCode), 
+                                        keyDown: type == .keyDown) {
+                    
+                    // Copy original modifier flags
+                    newEvent.flags = event.flags
+                    
+                    // Add shift modifier if space is acting as shift
+                    if isSpaceActingAsShift {
+                        newEvent.flags.insert(.maskShift)
+                    }
+                    
+                    return Unmanaged.passRetained(newEvent)
+                }
             }
         }
         
