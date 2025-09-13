@@ -35,12 +35,49 @@ class KeyMonitor: ObservableObject {
             name: NSApplication.didBecomeActiveNotification,
             object: nil
         )
+        
+        // Listen for app becoming inactive (when user goes to System Preferences)
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(applicationWillResignActive),
+            name: NSApplication.willResignActiveNotification,
+            object: nil
+        )
     }
     
     @objc private func applicationDidBecomeActive() {
-        // Check for layout changes when app becomes active (e.g., after permission dialogs)
+        // Check for both permission and layout changes when app becomes active (e.g., after permission dialogs)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.checkPermissionStatus()
             self.checkForLayoutChange()
+        }
+    }
+    
+    @objc private func applicationWillResignActive() {
+        // Store current permission state before app loses focus
+        // This helps detect changes when we regain focus
+        print("App losing focus - current permission state: \(hasAccessibilityPermission)")
+    }
+    
+    private func checkPermissionStatus() {
+        let accessEnabled = AXIsProcessTrusted()
+        let wasEnabled = hasAccessibilityPermission
+        hasAccessibilityPermission = accessEnabled
+        
+        if wasEnabled != accessEnabled {
+            print("Permission state changed - was: \(wasEnabled), now: \(accessEnabled)")
+            
+            if !wasEnabled && accessEnabled {
+                print("✅ Permission granted during focus change")
+                setupKeyTap()
+            } else if wasEnabled && !accessEnabled {
+                print("❌ Permission revoked during focus change")
+                if let currentEventTap = eventTap {
+                    CFMachPortInvalidate(currentEventTap)
+                }
+                eventTap = nil
+                pressedKeys.removeAll()
+            }
         }
     }
     
@@ -72,8 +109,8 @@ class KeyMonitor: ObservableObject {
     }
     
     private func startPermissionMonitoring() {
-        // Check permission status every 2 seconds
-        permissionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+        // Check permission status more frequently (every 0.5 seconds) for better responsiveness
+        permissionTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
             let accessEnabled = AXIsProcessTrusted()
             
             DispatchQueue.main.async {
@@ -82,12 +119,14 @@ class KeyMonitor: ObservableObject {
                 
                 // If permission was just granted, setup key monitoring
                 if !wasEnabled && accessEnabled {
+                    print("✅ Accessibility permission granted - setting up key monitoring")
                     self.setupKeyTap()
                     // Also check for layout changes that might have occurred while permission dialogs were showing
                     self.checkForLayoutChange()
                 }
-                // If permission was revoked, clean up
+                // If permission was revoked, clean up immediately
                 else if wasEnabled && !accessEnabled {
+                    print("❌ Accessibility permission revoked - cleaning up")
                     if let eventTap = self.eventTap {
                         CFMachPortInvalidate(eventTap)
                         self.eventTap = nil
@@ -96,7 +135,9 @@ class KeyMonitor: ObservableObject {
                 }
                 
                 // Always check layout when permission state changes (dialogs may affect input source)
-                self.checkForLayoutChange()
+                if wasEnabled != accessEnabled {
+                    self.checkForLayoutChange()
+                }
             }
         }
     }
@@ -133,9 +174,43 @@ class KeyMonitor: ObservableObject {
             let runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, eventTap, 0)
             CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, .commonModes)
             CGEvent.tapEnable(tap: eventTap, enable: true)
-            print("Key monitoring enabled successfully")
+            print("✅ Key monitoring enabled successfully")
+            
+            // Validate that the event tap is actually working
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.validateEventTap()
+            }
         } else {
-            print("Failed to create event tap")
+            print("❌ Failed to create event tap - permission may have been revoked")
+            // If we can't create the event tap but AXIsProcessTrusted says we have permission,
+            // force a permission state update
+            DispatchQueue.main.async {
+                self.hasAccessibilityPermission = false
+            }
+        }
+    }
+    
+    private func validateEventTap() {
+        // Check if event tap is still valid and enabled
+        if let currentEventTap = eventTap {
+            let isEnabled = CGEvent.tapIsEnabled(tap: currentEventTap)
+            if !isEnabled {
+                print("⚠️ Event tap is disabled - permission may have been revoked")
+                DispatchQueue.main.async {
+                    self.hasAccessibilityPermission = false
+                    if let eventTap = self.eventTap {
+                        CFMachPortInvalidate(eventTap)
+                    }
+                    self.eventTap = nil
+                    self.pressedKeys.removeAll()
+                }
+            }
+        } else if hasAccessibilityPermission {
+            print("⚠️ Event tap is nil but permission flag is true - correcting state")
+            DispatchQueue.main.async {
+                self.hasAccessibilityPermission = false
+                self.pressedKeys.removeAll()
+            }
         }
     }
     

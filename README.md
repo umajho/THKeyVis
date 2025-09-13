@@ -205,3 +205,12 @@ I can still resize the window. And now the `Layout: xxx` texts are duplicated.
 I also forgot to mention that you should account for the layout change by things
 like the “Accessibility permission required” alert.
 ```
+
+### 12
+
+#### Prompt
+
+```md
+I found that when the permission is revoked, the app still thinks it has the
+permission, please fix that.
+```
