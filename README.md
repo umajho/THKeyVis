@@ -26,7 +26,7 @@ is not very common:
 
 #### Episode 1
 
-##### Prompt
+##### Prompts
 
 ###### Part 1
 
@@ -79,4 +79,20 @@ please rename the `build-rust` command in justfile to `build-debug-rust`, and
 also apply the same fix to `build-rust-release` (which should be renamed to
 `build-release-rust`). also, please fix `build_rust.sh`, it currently only build
 the release version.
+```
+
+#### Episode 2
+
+##### Prompt
+
+###### Part 1
+
+```md
+You should be able to find the logic for handling Accesibility permission in the
+old swift code.
+
+This time, spawn a thread in swift to monitor whether the permission is granted,
+and use shared memory to let the rust side know the state. In rust, at every
+frame, it checks the value in the shared memory, and if the permission is not
+granted, it warns like what is done in the old code.
 ```
