@@ -12,3 +12,9 @@ pub fn init() {
         d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
     }
 }
+
+// Export the init function with C ABI for Swift interop
+#[unsafe(no_mangle)]
+pub extern "C" fn rust_init() {
+    init();
+}

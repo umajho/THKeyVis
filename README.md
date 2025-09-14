@@ -23,3 +23,27 @@ is not very common:
 [Here](./macOS/README.md#copilot-agent-histroy).
 
 ### Session 2
+
+#### Episode 1
+
+##### Prompt
+
+```md
+Hello. Can you make the swift project in `./macOS` to hand over the main thread
+to the rust's `init` function in `./core/src/lib.rs`?
+
+When the rust function returned, terminate the app.
+
+Don't let the swift code do any other unnecessary things, like setting up
+SwiftUI.
+
+Don't clean up the old SwiftUI related code for now. You can comment out those
+code that should not run in the main path though.
+
+You can reference:
+https://gist.github.com/Jomy10/a4873dd43942ed1bf54d387dbc888795
+
+Don't forget to make xcodebuild to run the build scripts during building.
+```
+
+…

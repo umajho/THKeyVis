@@ -4,7 +4,10 @@
 //
 
 import SwiftUI
+import Foundation
 
+// Comment out SwiftUI-based main to hand over control to Rust
+/*
 @main
 struct THKeyVisApp: App {
     @StateObject private var keyMonitor = KeyMonitor()
@@ -22,3 +25,6 @@ struct THKeyVisApp: App {
         .windowResizability(.contentSize)
     }
 }
+*/
+
+// SwiftUI App struct preserved for reference (commented out above)

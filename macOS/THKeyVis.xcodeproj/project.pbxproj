@@ -6,6 +6,14 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		95CEE08B2E770681009DB706 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95CEE08A2E770681009DB706 /* Cocoa.framework */; };
+		95CEE08D2E770687009DB706 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95CEE08C2E770687009DB706 /* OpenGL.framework */; };
+		95CEE08F2E77068D009DB706 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95CEE08E2E77068D009DB706 /* IOKit.framework */; };
+		95CEE0912E770693009DB706 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95CEE0902E770693009DB706 /* CoreVideo.framework */; };
+		95CEE0932E770699009DB706 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95CEE0922E770699009DB706 /* CoreGraphics.framework */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		955156322E75A0C60062B98D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +35,11 @@
 		955156232E75A0C60062B98D /* THKeyVis.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = THKeyVis.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		955156312E75A0C60062B98D /* THKeyVisTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = THKeyVisTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		9551563B2E75A0C60062B98D /* THKeyVisUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = THKeyVisUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		95CEE08A2E770681009DB706 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		95CEE08C2E770687009DB706 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		95CEE08E2E77068D009DB706 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		95CEE0902E770693009DB706 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
+		95CEE0922E770699009DB706 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +65,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				95CEE0932E770699009DB706 /* CoreGraphics.framework in Frameworks */,
+				95CEE0912E770693009DB706 /* CoreVideo.framework in Frameworks */,
+				95CEE08F2E77068D009DB706 /* IOKit.framework in Frameworks */,
+				95CEE08D2E770687009DB706 /* OpenGL.framework in Frameworks */,
+				95CEE08B2E770681009DB706 /* Cocoa.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -78,6 +96,7 @@
 				955156252E75A0C60062B98D /* THKeyVis */,
 				955156342E75A0C60062B98D /* THKeyVisTests */,
 				9551563E2E75A0C60062B98D /* THKeyVisUITests */,
+				95CEE0892E770681009DB706 /* Frameworks */,
 				955156242E75A0C60062B98D /* Products */,
 			);
 			sourceTree = "<group>";
@@ -92,6 +111,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		95CEE0892E770681009DB706 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				95CEE0922E770699009DB706 /* CoreGraphics.framework */,
+				95CEE0902E770693009DB706 /* CoreVideo.framework */,
+				95CEE08E2E77068D009DB706 /* IOKit.framework */,
+				95CEE08C2E770687009DB706 /* OpenGL.framework */,
+				95CEE08A2E770681009DB706 /* Cocoa.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -99,6 +130,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 955156452E75A0C60062B98D /* Build configuration list for PBXNativeTarget "THKeyVis" */;
 			buildPhases = (
+				95CEE0942E7706C1009DB706 /* ShellScript */,
 				9551561F2E75A0C60062B98D /* Sources */,
 				955156202E75A0C60062B98D /* Frameworks */,
 				955156212E75A0C60062B98D /* Resources */,
@@ -230,6 +262,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		95CEE0942E7706C1009DB706 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 8;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${SRCROOT}/../core/src/lib.rs",
+				"${SRCROOT}/../core/Cargo.toml",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"${BUILT_PRODUCTS_DIR}/libcore.a",
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+			shellPath = /bin/sh;
+			shellScript = "   # Inline script to avoid sandbox issues\n   echo \"Building Rust library...\"\n   \n   # Navigate to core directory\n   CORE_DIR=\"${SRCROOT}/../core\"\n   cd \"${CORE_DIR}\"\n   \n   # Build for current architecture\n   if [[ $(uname -m) == 'arm64' ]]; then\n       echo \"Building for arm64...\"\n       cargo build --release --lib --target aarch64-apple-darwin\n       RUST_LIB_PATH=\"${CORE_DIR}/target/aarch64-apple-darwin/release/libcore.a\"\n   else\n       echo \"Building for x86_64...\"\n       cargo build --release --lib --target x86_64-apple-darwin\n       RUST_LIB_PATH=\"${CORE_DIR}/target/x86_64-apple-darwin/release/libcore.a\"\n   fi\n   \n   # Copy library to build directory\n   cp \"${RUST_LIB_PATH}\" \"${BUILT_PRODUCTS_DIR}/libcore.a\"\n   echo \"Rust library copied to: ${BUILT_PRODUCTS_DIR}/libcore.a\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		9551561F2E75A0C60062B98D /* Sources */ = {
@@ -403,11 +458,14 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)";
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lcore";
 				PRODUCT_BUNDLE_IDENTIFIER = me.umajho.THKeyVis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = THKeyVis/rust_bridge.h;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -428,11 +486,14 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(BUILT_PRODUCTS_DIR)";
 				MARKETING_VERSION = 1.0;
+				OTHER_LDFLAGS = "-lcore";
 				PRODUCT_BUNDLE_IDENTIFIER = me.umajho.THKeyVis;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = THKeyVis/rust_bridge.h;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
