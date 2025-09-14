@@ -621,12 +621,12 @@ fn draw_keyboard_layout(
         icons,
     );
 
-    // Draw layout name at top left, positioned relative to keyboard
+    // Draw layout name at top left, aligned with ESC key's left edge
     let layout_name = state.get_layout_name();
     if !layout_name.is_empty() {
         d.draw_text(
             &format!("Layout: {}", layout_name),
-            20,
+            layout.padding_x as i32,
             (start_y - 25.0) as i32,
             12,
             Color::DARKGRAY,

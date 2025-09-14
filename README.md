@@ -457,3 +457,10 @@ The hover detection is off. Also, you should not hardcode values.
 Oh, my assumption is wrong, the reason the button not working might be related
 to the implementation of draggable everwhere.
 ```
+
+###### Part 8
+
+```md
+Please make the beginning of the “Layout: …” text align with the left edge of
+the esc key's square.
+```
