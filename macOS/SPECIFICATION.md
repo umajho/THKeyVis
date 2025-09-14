@@ -32,15 +32,15 @@ All Ported.
 
 ### 3. Keyboard Layout Adaptation
 
-- [ ] Automatically detect the current keyboard layout (e.g., QWERTY, Colemak,
+- [x] Automatically detect the current keyboard layout (e.g., QWERTY, Colemak,
       etc.)
-- [ ] Display the correct character labels for each physical key position
+- [x] Display the correct character labels for each physical key position
 - [ ] React immediately when the user switches keyboard layouts
   - Should be implemented on the swift side. See `setupInputSourceMonitoring` in
     `KeyMonitor.swift`.
-- [ ] Show the layout name in the UI (e.g., "Layout: Colemak")
+- [x] Show the layout name in the UI (e.g., "Layout: Colemak")
   - At the top left corner below the title bar.
-- [ ] Gracefully handle complex layouts (CJK) by showing fallback labels
+- [x] Gracefully handle complex layouts (CJK) by showing fallback labels
 
 ### 4. Window Behavior
 
@@ -72,18 +72,18 @@ NOTE:
 #### Visual behavior
 
 - [x] Keys light up / return to normal immediately when pressed / released
-- [ ] Disabled keys (A, D positions in QWERTY) show in grey
-- [ ] All keys show in red when permissions are missing, and are disabled
+- [x] Disabled keys (A, D positions in QWERTY) show in grey
+- [x] All keys show in red when permissions are missing, and are disabled
 - [x] No animation delays (immediate response for gaming)
 
 ### 7. Key Display Requirements
 
 **Each key must show:**
 
-- [ ] Main key label (center, prominent) - matches current keyboard layout
-- [ ] Small layout hint (top-left corner, blue) - only if different from main
+- [x] Main key label (center, prominent) - matches current keyboard layout
+- [x] Small layout hint (top-left corner, blue) - only if different from main
       label
-- [ ] Functional icon (bottom) - for gaming context (arrows, retry, bomb, etc.)
+- [x] Functional icon (bottom) - for gaming context (arrows, retry, bomb, etc.)
   - in QWERTY position:
     - `S` for Retry
     - `F` for Bomb
@@ -94,7 +94,7 @@ NOTE:
 ### 8. Layout Responsiveness
 
 - [x] Maintain consistent visual layout regardless of permission state
-- [ ] Preserve key spacing and alignment at all times
+- [x] Preserve key spacing and alignment at all times
 
 ### 10. Performance Requirements
 
