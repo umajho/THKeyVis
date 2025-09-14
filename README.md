@@ -342,3 +342,19 @@ window obviously are not symmertic.
 The horizontal paddings are symmertic now, but the vertical ones still are not.
 The bottom padding is way bigger than the top padding.
 ```
+
+###### Part 4
+
+```md
+Finally, let's fix the keyboard layout-monitoring issue.
+
+You mistakenly thought that modifying `KeyMonitor.swift` can sovle that. But in
+reality, `KeyMonitor.swift` is not used in the new architecture at all. What you
+should do is to port the functionality from `KeyMonitor.swift` to `main.swift`.
+
+I should remind you that, you should pass the pointer of the function that start
+the monitoring to the rust side, and let rust to call that, to avoid
+fork-related issue. Maybe you should reuse the `swiftStartPermissionMonitoring`
+function. (Don't forget to rename `swiftStartPermissionMonitoring` to a more
+appropriate name if you choose this approach.)
+```

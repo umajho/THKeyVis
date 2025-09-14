@@ -1,13 +1,147 @@
 import Foundation
 import ApplicationServices
 import IOKit.hid
+import Carbon
 
-// Swift implementation of permission monitoring that Rust will call
-@_cdecl("swift_start_permission_monitoring")
-func swiftStartPermissionMonitoring() {
+// Global variables for keyboard layout monitoring
+var currentInputSource: TISInputSource?
+var lastLayoutName: String = ""
+
+// Helper function to get character for a specific key code in current layout
+func getCharacterForKeyCode(keyCode: Int, inputSource: TISInputSource) -> String? {
+    // Get the keyboard layout data
+    guard let layoutDataRef = TISGetInputSourceProperty(inputSource, kTISPropertyUnicodeKeyLayoutData) else {
+        return nil
+    }
+    
+    let layoutData = Unmanaged<CFData>.fromOpaque(layoutDataRef).takeUnretainedValue()
+    let keyboardLayoutPtr = CFDataGetBytePtr(layoutData)
+    
+    var deadKeyState: UInt32 = 0
+    var actualStringLength = 0
+    var unicodeString = [UniChar](repeating: 0, count: 4)
+    
+    let status = UCKeyTranslate(
+        UnsafePointer<UCKeyboardLayout>(OpaquePointer(keyboardLayoutPtr)),
+        UInt16(keyCode),
+        UInt16(kUCKeyActionDisplay),
+        0, // no modifier keys
+        UInt32(LMGetKbdType()),
+        OptionBits(kUCKeyTranslateNoDeadKeysBit),
+        &deadKeyState,
+        4,
+        &actualStringLength,
+        &unicodeString
+    )
+    
+    guard status == noErr && actualStringLength > 0 else {
+        return nil
+    }
+    
+    return String(utf16CodeUnits: unicodeString, count: actualStringLength)
+}
+
+// Helper function to update Rust with current layout information
+func updateRustLayoutInfo(name: String, inputSource: TISInputSource) {
+    // Send layout name to Rust
+    set_layout_name(name)
+    
+    // Update key labels for each monitored key position
+    let keyPositions = [
+        ("a", 0),   // A position
+        ("r", 1),   // R position (S in QWERTY) 
+        ("s", 2),   // S position (D in QWERTY)
+        ("t", 3),   // T position (F in QWERTY)
+        ("n", 38),  // N position (J in QWERTY)
+        ("e", 40),  // E position (K in QWERTY)
+        ("i", 37),  // I position (L in QWERTY)
+        ("o", 41),  // O position (; in QWERTY)
+    ]
+    
+    for (position, keyCode) in keyPositions {
+        let label = getCharacterForKeyCode(keyCode: keyCode, inputSource: inputSource) ?? position.uppercased()
+        print("Setting key label for position \(position) (keyCode \(keyCode)): \(label)")
+        set_key_label(position, label)
+    }
+}
+
+// Function to update current input source and notify Rust
+func updateCurrentInputSource() {
+    currentInputSource = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
+    
+    // Get the layout name for display
+    if let inputSource = currentInputSource {
+        let nameRef = TISGetInputSourceProperty(inputSource, kTISPropertyLocalizedName)
+        if let nameRef = nameRef {
+            let name = Unmanaged<CFString>.fromOpaque(nameRef).takeUnretainedValue() as String
+            if name != lastLayoutName {
+                lastLayoutName = name
+                print("Keyboard layout changed to: \(name)")
+                
+                // Update Rust with the new layout information
+                updateRustLayoutInfo(name: name, inputSource: inputSource)
+            }
+        }
+    }
+}
+
+// Function to setup keyboard layout monitoring
+func setupKeyboardLayoutMonitoring() {
+    // Initial update
+    updateCurrentInputSource()
+    
+    // Listen for multiple types of input source changes for better reliability
+    DistributedNotificationCenter.default().addObserver(
+        forName: NSNotification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String),
+        object: nil,
+        queue: .main
+    ) { _ in
+        updateCurrentInputSource()
+    }
+    
+    // Also listen for input source enabled/disabled changes
+    DistributedNotificationCenter.default().addObserver(
+        forName: NSNotification.Name(kTISNotifyEnabledKeyboardInputSourcesChanged as String),
+        object: nil,
+        queue: .main
+    ) { _ in
+        updateCurrentInputSource()
+    }
+    
+    // Set up a periodic check as fallback for missed notifications
+    Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        // Periodic check in case notifications are missed
+        let currentSource = TISCopyCurrentKeyboardInputSource().takeRetainedValue()
+        
+        if let nameRef = TISGetInputSourceProperty(currentSource, kTISPropertyLocalizedName) {
+            let name = Unmanaged<CFString>.fromOpaque(nameRef).takeUnretainedValue() as String
+            
+            if name != lastLayoutName {
+                print("Layout change detected via periodic check: \(lastLayoutName) -> \(name)")
+                currentInputSource = currentSource
+                lastLayoutName = name
+                
+                // Update Rust with the new layout information
+                updateRustLayoutInfo(name: name, inputSource: currentSource)
+            }
+        }
+    }
+}
+
+// Swift implementation of system monitoring (permissions + keyboard layout) that Rust will call
+@_cdecl("swift_start_system_monitoring")
+func swiftStartSystemMonitoring() {
     // First, request Input Monitoring permission (this will show the dialog if needed)
     let initialRequest = IOHIDRequestAccess(kIOHIDRequestTypeListenEvent)
     print("Initial Input Monitoring permission request result: \(initialRequest)")
+    
+    // Setup keyboard layout monitoring immediately
+    setupKeyboardLayoutMonitoring()
+    
+    // Force an initial layout update after a short delay to ensure everything is initialized
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        updateCurrentInputSource()
+    }
     
     // This function will be called from the parent process (after fork)
     // Start monitoring Input Monitoring permission in a background thread
@@ -25,11 +159,11 @@ func swiftStartPermissionMonitoring() {
     
     // This function should return immediately after starting the background monitoring
     // The monitoring will continue in the background thread
-    print("Swift Input Monitoring permission monitoring started in background thread")
+    print("Swift system monitoring (permissions + keyboard layout) started")
 }
 
-// Call the Rust main function with Swift permission monitoring callback
-rust_main_with_callback(swiftStartPermissionMonitoring)
+// Call the Rust main function with Swift system monitoring callback
+rust_main_with_callback(swiftStartSystemMonitoring)
 
 // When Rust function returns, terminate the app
 exit(0)
