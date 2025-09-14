@@ -376,6 +376,31 @@ fn check_accessibility_permission() -> bool {
     }
 }
 
+// Layout constants structure
+struct KeyboardLayout {
+    key_size: f32,
+    key_spacing: f32,
+    padding_x: f32,
+    padding_y: f32,
+    gap_multiplier: f32,
+}
+
+impl KeyboardLayout {
+    fn new() -> Self {
+        Self {
+            key_size: 60.0,
+            key_spacing: 10.0,
+            padding_x: 40.0,
+            padding_y: 25.0,
+            gap_multiplier: 5.5,
+        }
+    }
+    
+    fn right_start_x(&self) -> f32 {
+        self.padding_x + (self.key_size + self.key_spacing) * self.gap_multiplier
+    }
+}
+
 fn draw_keyboard_layout(
     d: &mut RaylibDrawHandle,
     state: &SharedState,
@@ -383,101 +408,97 @@ fn draw_keyboard_layout(
     icons: &GameIcons,
     vertical_offset: f32,
 ) {
-    // Layout constants - matching SPECIFICATION.md layout
-    const KEY_SIZE: f32 = 60.0;
-    const KEY_SPACING: f32 = 10.0;
-    const START_X: f32 = 40.0; // Reduced padding for symmetric layout
-    let start_y = 25.0 + vertical_offset; // Reduced top padding
+    // Use layout constants structure
+    let layout = KeyboardLayout::new();
+    let start_y = layout.padding_y + vertical_offset;
 
     // Left side keys: ESC to the left of A, then A, R, S, T in a row
     // ESC should be at the left of A according to specification
     let left_keys = [
-        ("ESC", 53, START_X, start_y, KEY_SIZE, KEY_SIZE), // ESC at the left
+        ("ESC", 53, layout.padding_x, start_y, layout.key_size, layout.key_size), // ESC at the left
         (
             "A",
             0,
-            START_X + KEY_SIZE + KEY_SPACING,
+            layout.padding_x + layout.key_size + layout.key_spacing,
             start_y,
-            KEY_SIZE,
-            KEY_SIZE,
+            layout.key_size,
+            layout.key_size,
         ),
         (
             "R",
             1,
-            START_X + (KEY_SIZE + KEY_SPACING) * 2.0,
+            layout.padding_x + (layout.key_size + layout.key_spacing) * 2.0,
             start_y,
-            KEY_SIZE,
-            KEY_SIZE,
+            layout.key_size,
+            layout.key_size,
         ),
         (
             "S",
-            2,
-            START_X + (KEY_SIZE + KEY_SPACING) * 3.0,
+            4,
+            layout.padding_x + (layout.key_size + layout.key_spacing) * 3.0,
             start_y,
-            KEY_SIZE,
-            KEY_SIZE,
+            layout.key_size,
+            layout.key_size,
         ),
         (
             "T",
-            3,
-            START_X + (KEY_SIZE + KEY_SPACING) * 4.0,
+            17,
+            layout.padding_x + (layout.key_size + layout.key_spacing) * 4.0,
             start_y,
-            KEY_SIZE,
-            KEY_SIZE,
+            layout.key_size,
+            layout.key_size,
         ),
-    ];
-
-    // BACKSPACE - aligned with A-T, not with ESC
-    let backspace_x = START_X + KEY_SIZE + KEY_SPACING; // Start at A position
-    let backspace_width = (KEY_SIZE + KEY_SPACING) * 4.0 - KEY_SPACING; // Span A through T
+    ];    // BACKSPACE - aligned with A-T, not with ESC
+    let backspace_x = layout.padding_x + layout.key_size + layout.key_spacing; // Start at A position
+    let backspace_width = (layout.key_size + layout.key_spacing) * 4.0 - layout.key_spacing; // Span A through T
     let backspace = (
         "BACKSPACE",
         51,
         backspace_x,
-        start_y + KEY_SIZE + KEY_SPACING,
+        start_y + layout.key_size + layout.key_spacing,
         backspace_width,
-        KEY_SIZE,
+        layout.key_size,
     );
 
     // Right side keys: N, E, I, O
-    let right_start_x = START_X + (KEY_SIZE + KEY_SPACING) * 5.5; // Moderate gap after left side
+    let right_start_x = layout.right_start_x(); // Calculate from layout
     let right_keys = [
-        ("N", 38, right_start_x, start_y, KEY_SIZE, KEY_SIZE),
+        ("N", 38, right_start_x, start_y, layout.key_size, layout.key_size),
         (
             "E",
             40,
-            right_start_x + KEY_SIZE + KEY_SPACING,
+            right_start_x + layout.key_size + layout.key_spacing,
             start_y,
-            KEY_SIZE,
-            KEY_SIZE,
+            layout.key_size,
+            layout.key_size,
         ),
         (
             "I",
             37,
-            right_start_x + (KEY_SIZE + KEY_SPACING) * 2.0,
+            right_start_x + (layout.key_size + layout.key_spacing) * 2.0,
             start_y,
-            KEY_SIZE,
-            KEY_SIZE,
+            layout.key_size,
+            layout.key_size,
         ),
         (
             "O",
             41,
-            right_start_x + (KEY_SIZE + KEY_SPACING) * 3.0,
+            right_start_x + (layout.key_size + layout.key_spacing) * 3.0,
             start_y,
-            KEY_SIZE,
-            KEY_SIZE,
+            layout.key_size,
+            layout.key_size,
         ),
     ];
 
     // SPACE - spanning the right side keys
-    let space_width = (KEY_SIZE + KEY_SPACING) * 4.0 - KEY_SPACING;
+    let space_width = (layout.key_size + layout.key_spacing) * 4.0 - layout.key_spacing;
     let space = (
         "SPACE",
         49,
         right_start_x,
-        start_y + KEY_SIZE + KEY_SPACING,
+        start_y + layout.key_size + layout.key_spacing,
         space_width,
-        KEY_SIZE,
+        layout.key_size,
     );
 
     // Draw all keys
@@ -687,14 +708,56 @@ fn get_qwerty_hint(keycode: u32) -> &'static str {
     }
 }
 
+// Layout calculation structure
+struct LayoutDimensions {
+    window_width: i32,
+    window_height: i32,
+    base_height: i32,
+    banner_height: i32,
+}
+
+impl LayoutDimensions {
+    fn calculate() -> Self {
+        // Use the same layout constants as KeyboardLayout
+        let keyboard_layout = KeyboardLayout::new();
+        
+        // Calculate keyboard dimensions
+        // Left side: ESC + 4 keys (A,R,S,T) = 5 keys total
+        let left_width = keyboard_layout.key_size * 5.0 + keyboard_layout.key_spacing * 4.0;
+        
+        // Gap between left and right sides
+        let gap_width = (keyboard_layout.key_size + keyboard_layout.key_spacing) * (keyboard_layout.gap_multiplier - 5.0); // Additional gap beyond left keys
+        
+        // Right side: 4 keys (N,E,I,O)
+        let right_width = keyboard_layout.key_size * 4.0 + keyboard_layout.key_spacing * 3.0;
+        
+        // Total keyboard width
+        let keyboard_width = left_width + gap_width + right_width;
+        let window_width = (keyboard_width + keyboard_layout.padding_x * 2.0) as i32;
+        
+        // Calculate height
+        // 2 rows of keys + backspace row + space row
+        let keyboard_height = keyboard_layout.key_size * 2.0 + keyboard_layout.key_spacing * 1.0; // 2 key rows + spacing between them
+        let base_height = (keyboard_height + keyboard_layout.padding_y * 2.0) as i32;
+        
+        // Banner height for permission warning
+        let banner_height = 90;
+        
+        Self {
+            window_width,
+            window_height: base_height + banner_height,
+            base_height,
+            banner_height,
+        }
+    }
+}
+
 fn run_ui_process(shared_state: *mut SharedState) {
-    // Constants for layout
-    const BANNER_HEIGHT: i32 = 90; // Banner + margin space
-    const BASE_HEIGHT: i32 = 180; // Reduced height for symmetric vertical padding
-    const WINDOW_WIDTH: i32 = 725; // Calculated: keyboard width (645) + symmetric padding (40×2)
+    // Calculate layout dimensions dynamically
+    let layout = LayoutDimensions::calculate();
 
     let (mut rl, thread) = raylib::init()
-        .size(WINDOW_WIDTH, BASE_HEIGHT + BANNER_HEIGHT)
+        .size(layout.window_width, layout.window_height)
         .title("THKeyVis")
         .transparent()
         .build();
@@ -725,11 +788,11 @@ fn run_ui_process(shared_state: *mut SharedState) {
         // Dynamically resize window based on permission state
         if has_permission != last_permission_state {
             let target_height = if has_permission {
-                BASE_HEIGHT
+                layout.base_height
             } else {
-                BASE_HEIGHT + BANNER_HEIGHT
+                layout.window_height
             };
-            rl.set_window_size(WINDOW_WIDTH, target_height);
+            rl.set_window_size(layout.window_width, target_height);
             last_permission_state = has_permission;
         }
 
@@ -826,7 +889,7 @@ fn run_ui_process(shared_state: *mut SharedState) {
         let keyboard_offset_y = if has_permission {
             0.0
         } else {
-            BANNER_HEIGHT as f32
+            layout.banner_height as f32
         };
         draw_keyboard_layout(&mut d, state, has_permission, &icons, keyboard_offset_y);
     }

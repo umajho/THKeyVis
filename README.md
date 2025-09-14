@@ -419,3 +419,10 @@ don't forgot to adjust the window's width.
 now the gap is as small as the margin between keys on the same side, which is
 not what I want. I still want the gap to be larger.
 ```
+
+###### Part 4
+
+```md
+Instead of hardcode heights/weights, can we let rust calculate those values for
+us?
+```
