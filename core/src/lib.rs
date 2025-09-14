@@ -376,22 +376,23 @@ fn draw_keyboard_layout(
     state: &SharedState,
     has_permission: bool,
     icons: &GameIcons,
+    vertical_offset: f32,
 ) {
     // Layout constants - matching SPECIFICATION.md layout
     const KEY_SIZE: f32 = 60.0;
     const KEY_SPACING: f32 = 10.0;
-    const START_X: f32 = 60.0;
-    const START_Y: f32 = 120.0;
+    const START_X: f32 = 40.0; // Reduced padding for symmetric layout
+    let start_y = 25.0 + vertical_offset; // Reduced top padding
 
     // Left side keys: ESC to the left of A, then A, R, S, T in a row
     // ESC should be at the left of A according to specification
     let left_keys = [
-        ("ESC", 53, START_X, START_Y, KEY_SIZE, KEY_SIZE), // ESC at the left
+        ("ESC", 53, START_X, start_y, KEY_SIZE, KEY_SIZE), // ESC at the left
         (
             "A",
             0,
             START_X + KEY_SIZE + KEY_SPACING,
-            START_Y,
+            start_y,
             KEY_SIZE,
             KEY_SIZE,
         ),
@@ -399,7 +400,7 @@ fn draw_keyboard_layout(
             "R",
             1,
             START_X + (KEY_SIZE + KEY_SPACING) * 2.0,
-            START_Y,
+            start_y,
             KEY_SIZE,
             KEY_SIZE,
         ),
@@ -407,7 +408,7 @@ fn draw_keyboard_layout(
             "S",
             2,
             START_X + (KEY_SIZE + KEY_SPACING) * 3.0,
-            START_Y,
+            start_y,
             KEY_SIZE,
             KEY_SIZE,
         ),
@@ -415,7 +416,7 @@ fn draw_keyboard_layout(
             "T",
             3,
             START_X + (KEY_SIZE + KEY_SPACING) * 4.0,
-            START_Y,
+            start_y,
             KEY_SIZE,
             KEY_SIZE,
         ),
@@ -428,7 +429,7 @@ fn draw_keyboard_layout(
         "BACKSPACE",
         51,
         backspace_x,
-        START_Y + KEY_SIZE + KEY_SPACING,
+        start_y + KEY_SIZE + KEY_SPACING,
         backspace_width,
         KEY_SIZE,
     );
@@ -436,12 +437,12 @@ fn draw_keyboard_layout(
     // Right side keys: N, E, I, O
     let right_start_x = START_X + (KEY_SIZE + KEY_SPACING) * 6.0; // Leave gap after left side
     let right_keys = [
-        ("N", 38, right_start_x, START_Y, KEY_SIZE, KEY_SIZE),
+        ("N", 38, right_start_x, start_y, KEY_SIZE, KEY_SIZE),
         (
             "E",
             40,
             right_start_x + KEY_SIZE + KEY_SPACING,
-            START_Y,
+            start_y,
             KEY_SIZE,
             KEY_SIZE,
         ),
@@ -449,7 +450,7 @@ fn draw_keyboard_layout(
             "I",
             37,
             right_start_x + (KEY_SIZE + KEY_SPACING) * 2.0,
-            START_Y,
+            start_y,
             KEY_SIZE,
             KEY_SIZE,
         ),
@@ -457,7 +458,7 @@ fn draw_keyboard_layout(
             "O",
             41,
             right_start_x + (KEY_SIZE + KEY_SPACING) * 3.0,
-            START_Y,
+            start_y,
             KEY_SIZE,
             KEY_SIZE,
         ),
@@ -469,7 +470,7 @@ fn draw_keyboard_layout(
         "SPACE",
         49,
         right_start_x,
-        START_Y + KEY_SIZE + KEY_SPACING,
+        start_y + KEY_SIZE + KEY_SPACING,
         space_width,
         KEY_SIZE,
     );
@@ -531,13 +532,13 @@ fn draw_keyboard_layout(
         icons,
     );
 
-    // Draw layout name at top left
+    // Draw layout name at top left, positioned relative to keyboard
     let layout_name = state.get_layout_name();
     if !layout_name.is_empty() {
         d.draw_text(
             &format!("Layout: {}", layout_name),
             20,
-            80,
+            (start_y - 25.0) as i32,
             12,
             Color::DARKGRAY,
         );
@@ -672,12 +673,22 @@ fn get_qwerty_hint(keycode: u32) -> &'static str {
 }
 
 fn run_ui_process(shared_state: *mut SharedState) {
-    let (mut rl, thread) = raylib::init().size(800, 300).title("THKeyVis").build();
+    // Constants for layout
+    const BANNER_HEIGHT: i32 = 90; // Banner + margin space
+    const BASE_HEIGHT: i32 = 180; // Reduced height for symmetric vertical padding
+    const WINDOW_WIDTH: i32 = 770; // Calculated: keyboard width (690) + symmetric padding (40×2)
+
+    let (mut rl, thread) = raylib::init()
+        .size(WINDOW_WIDTH, BASE_HEIGHT + BANNER_HEIGHT)
+        .title("THKeyVis")
+        .build();
     rl.set_target_fps(120);
 
     // Load game icons
     let mut icons = GameIcons::new();
     icons.load_icons(&mut rl, &thread);
+
+    let mut last_permission_state = false;
 
     while !rl.window_should_close() {
         // Get input state before drawing
@@ -687,16 +698,35 @@ fn run_ui_process(shared_state: *mut SharedState) {
         // Read shared state once per frame
         let state = unsafe { &*shared_state };
 
+        // Check accessibility permission state from shared memory
+        let has_permission = state.has_accessibility_permission;
+
+        // Dynamically resize window based on permission state
+        if has_permission != last_permission_state {
+            let target_height = if has_permission {
+                BASE_HEIGHT
+            } else {
+                BASE_HEIGHT + BANNER_HEIGHT
+            };
+            rl.set_window_size(WINDOW_WIDTH, target_height);
+            last_permission_state = has_permission;
+        }
+
+        // Get window dimensions before drawing
+        let window_width = rl.get_screen_width() as f32;
+
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::WHITE);
 
-        // Check accessibility permission state from shared memory
-        let has_permission = state.has_accessibility_permission;
-
         if !has_permission {
-            // Permission warning banner - matching KeyboardView.swift exactly
-            let banner_rect = Rectangle::new(20.0, 20.0, 600.0, 50.0);
+            // Permission warning banner - centered horizontally
+            let window_width = window_width;
+            let banner_width = 570.0; // Fits well in 770px window with padding
+            let banner_height = 50.0;
+            let banner_x = (window_width - banner_width) / 2.0;
+            let banner_y = 20.0;
+            let banner_rect = Rectangle::new(banner_x, banner_y, banner_width, banner_height);
 
             // Background with orange opacity (matching .orange.opacity(0.1))
             d.draw_rectangle_rounded(banner_rect, 0.16, 20, Color::new(255, 165, 0, 25)); // Orange with low opacity
@@ -704,20 +734,30 @@ fn run_ui_process(shared_state: *mut SharedState) {
             // Border (matching .orange.opacity(0.3))
             d.draw_rectangle_rounded_lines(banner_rect, 0.16, 20, Color::new(255, 165, 0, 76)); // Orange border
 
-            // Triangle icon (exclamationmark.triangle.fill)
-            d.draw_text("⚠", 32, 35, 16, Color::new(255, 165, 0, 255)); // Orange
+            // Triangle icon (exclamationmark.triangle.fill) - positioned relative to banner
+            d.draw_text(
+                "⚠",
+                (banner_x + 12.0) as i32,
+                (banner_y + 15.0) as i32,
+                16,
+                Color::new(255, 165, 0, 255),
+            ); // Orange
 
-            // Text: "Input Monitoring permission required"
+            // Text: "Input Monitoring permission required" - positioned relative to banner
             d.draw_text(
                 "Input Monitoring permission required",
-                55,
-                38,
+                (banner_x + 35.0) as i32,
+                (banner_y + 18.0) as i32,
                 12,
                 Color::new(255, 165, 0, 255), // Orange text
             );
 
-            // "Open Settings" button area (right side)
-            let button_rect = Rectangle::new(470.0, 32.0, 100.0, 20.0);
+            // "Open Settings" button area (right side of banner)
+            let button_width = 100.0;
+            let button_height = 20.0;
+            let button_x = banner_x + banner_width - button_width - 15.0;
+            let button_y = banner_y + (banner_height - button_height) / 2.0;
+            let button_rect = Rectangle::new(button_x, button_y, button_width, button_height);
 
             // Check if mouse is over button
             let is_button_hovered = mouse_pos.x >= button_rect.x
@@ -732,7 +772,13 @@ fn run_ui_process(shared_state: *mut SharedState) {
                 Color::new(0, 122, 255, 255) // Blue (matching SwiftUI .blue)
             };
 
-            d.draw_text("Open Settings", 475, 38, 11, button_color);
+            d.draw_text(
+                "Open Settings",
+                (button_x + 5.0) as i32,
+                (button_y + 6.0) as i32,
+                11,
+                button_color,
+            );
 
             // Handle button click
             if is_button_hovered && mouse_clicked {
@@ -744,7 +790,13 @@ fn run_ui_process(shared_state: *mut SharedState) {
         }
 
         // Draw keyboard layout according to SPECIFICATION.md
-        draw_keyboard_layout(&mut d, state, has_permission, &icons);
+        // Calculate vertical offset based on whether banner is shown
+        let keyboard_offset_y = if has_permission {
+            0.0
+        } else {
+            BANNER_HEIGHT as f32
+        };
+        draw_keyboard_layout(&mut d, state, has_permission, &icons, keyboard_offset_y);
     }
 }
 

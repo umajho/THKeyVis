@@ -317,3 +317,28 @@ back to icons.
 - Shoot should be `EosIconsTroubleshooting`.
 - Prefer `include_bytes`.
 ```
+
+###### Part 3
+
+```md
+Now it is the time to fix the UI layout:
+
+- when the permission banner is shown, it is not centered.
+- when the permission banner is not shown, the space for the banner still
+  remains. The UI should move up when the banner is not shown, and the window
+  should also shrinks to adapt the vertical space shift.
+```
+
+```md
+please make the padding of the window smaller and symmertic.
+```
+
+```md
+A part of the UI on the right side is clipped now. And the paddings round the
+window obviously are not symmertic.
+```
+
+```md
+The horizontal paddings are symmertic now, but the vertical ones still are not.
+The bottom padding is way bigger than the top padding.
+```
