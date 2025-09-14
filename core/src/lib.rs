@@ -395,7 +395,7 @@ impl KeyboardLayout {
             gap_multiplier: 5.5,
         }
     }
-    
+
     fn right_start_x(&self) -> f32 {
         self.padding_x + (self.key_size + self.key_spacing) * self.gap_multiplier
     }
@@ -407,44 +407,44 @@ fn get_key_label(state: &SharedState, keycode: u16) -> &str {
             let bytes = &state.key_states.label_0;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or("A")
-        },
+        }
         1 => {
             let bytes = &state.key_states.label_1;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or("S")
-        },
+        }
         2 => {
             let bytes = &state.key_states.label_2;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or("D")
-        },
+        }
         3 => {
             let bytes = &state.key_states.label_3;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or("F")
-        },
+        }
         38 => {
             let bytes = &state.key_states.label_38;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or("J")
-        },
+        }
         40 => {
             let bytes = &state.key_states.label_40;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or("K")
-        },
+        }
         37 => {
             let bytes = &state.key_states.label_37;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or("L")
-        },
+        }
         41 => {
             let bytes = &state.key_states.label_41;
             std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
                 .unwrap_or(";")
-        },
+        }
         53 => "ESC",
-        51 => "BACKSPACE", 
+        51 => "BACKSPACE",
         49 => "SPACE",
         _ => "?",
     }
@@ -464,7 +464,14 @@ fn draw_keyboard_layout(
     // Left side keys: ESC to the left of A, then A, S, D, F in a row (using dynamic labels)
     // ESC should be at the left of A according to specification
     let left_keys = [
-        ("ESC", 53, layout.padding_x, start_y, layout.key_size, layout.key_size), // ESC at the left
+        (
+            "ESC",
+            53,
+            layout.padding_x,
+            start_y,
+            layout.key_size,
+            layout.key_size,
+        ), // ESC at the left
         (
             get_key_label(state, 0), // First key (A in QWERTY)
             0,
@@ -497,7 +504,7 @@ fn draw_keyboard_layout(
             layout.key_size,
             layout.key_size,
         ),
-    ];    // BACKSPACE - aligned with A-T, not with ESC
+    ]; // BACKSPACE - aligned with A-T, not with ESC
     let backspace_x = layout.padding_x + layout.key_size + layout.key_spacing; // Start at A position
     let backspace_width = (layout.key_size + layout.key_spacing) * 4.0 - layout.key_spacing; // Span A through T
     let backspace = (
@@ -512,7 +519,14 @@ fn draw_keyboard_layout(
     // Right side keys: J, K, L, ; (using dynamic labels)
     let right_start_x = layout.right_start_x(); // Calculate from layout
     let right_keys = [
-        (get_key_label(state, 38), 38, right_start_x, start_y, layout.key_size, layout.key_size), // J in QWERTY
+        (
+            get_key_label(state, 38),
+            38,
+            right_start_x,
+            start_y,
+            layout.key_size,
+            layout.key_size,
+        ), // J in QWERTY
         (
             get_key_label(state, 40), // K in QWERTY
             40,
@@ -765,33 +779,79 @@ struct LayoutDimensions {
     banner_height: i32,
 }
 
+// Banner layout constants and calculations
+struct BannerLayout {
+    banner_width: f32,
+    banner_height: f32,
+    banner_y: f32,
+    button_width: f32,
+    button_height: f32,
+    button_margin: f32,
+}
+
+impl BannerLayout {
+    fn new() -> Self {
+        Self {
+            banner_width: 570.0,
+            banner_height: 50.0,
+            banner_y: 20.0,
+            button_width: 100.0,
+            button_height: 20.0,
+            button_margin: 15.0,
+        }
+    }
+
+    fn banner_x(&self, window_width: f32) -> f32 {
+        (window_width - self.banner_width) / 2.0
+    }
+
+    fn button_x(&self, window_width: f32) -> f32 {
+        self.banner_x(window_width) + self.banner_width - self.button_width - self.button_margin
+    }
+
+    fn button_y(&self) -> f32 {
+        self.banner_y + (self.banner_height - self.button_height) / 2.0
+    }
+
+    fn is_button_hovered(&self, window_width: f32, mouse_x: f32, mouse_y: f32) -> bool {
+        let button_x = self.button_x(window_width);
+        let button_y = self.button_y();
+
+        mouse_x >= button_x
+            && mouse_x <= button_x + self.button_width
+            && mouse_y >= button_y
+            && mouse_y <= button_y + self.button_height
+    }
+}
+
 impl LayoutDimensions {
     fn calculate() -> Self {
         // Use the same layout constants as KeyboardLayout
         let keyboard_layout = KeyboardLayout::new();
-        
+
         // Calculate keyboard dimensions
         // Left side: ESC + 4 keys (A,R,S,T) = 5 keys total
         let left_width = keyboard_layout.key_size * 5.0 + keyboard_layout.key_spacing * 4.0;
-        
+
         // Gap between left and right sides
-        let gap_width = (keyboard_layout.key_size + keyboard_layout.key_spacing) * (keyboard_layout.gap_multiplier - 5.0); // Additional gap beyond left keys
-        
+        let gap_width = (keyboard_layout.key_size + keyboard_layout.key_spacing)
+            * (keyboard_layout.gap_multiplier - 5.0); // Additional gap beyond left keys
+
         // Right side: 4 keys (N,E,I,O)
         let right_width = keyboard_layout.key_size * 4.0 + keyboard_layout.key_spacing * 3.0;
-        
+
         // Total keyboard width
         let keyboard_width = left_width + gap_width + right_width;
         let window_width = (keyboard_width + keyboard_layout.padding_x * 2.0) as i32;
-        
+
         // Calculate height
         // 2 rows of keys + backspace row + space row
         let keyboard_height = keyboard_layout.key_size * 2.0 + keyboard_layout.key_spacing * 1.0; // 2 key rows + spacing between them
         let base_height = (keyboard_height + keyboard_layout.padding_y * 2.0) as i32;
-        
+
         // Banner height for permission warning
         let banner_height = 90;
-        
+
         Self {
             window_width,
             window_height: base_height + banner_height,
@@ -850,20 +910,9 @@ fn run_ui_process(shared_state: *mut SharedState) {
         let window_height = rl.get_screen_height();
 
         // Calculate button area if permission banner is shown (for cursor change)
+        let banner_layout = BannerLayout::new();
         let is_button_hovered = if !has_permission {
-            let banner_width = 570.0;
-            let banner_x = (window_width - banner_width) / 2.0;
-            let button_width = 100.0;
-            let button_height = 20.0;
-            let button_x = banner_x + banner_width - button_width - 15.0;
-            let banner_height = 50.0;
-            let banner_y = 30.0;
-            let button_y = banner_y + (banner_height - button_height) / 2.0;
-            
-            mouse_pos.x >= button_x
-                && mouse_pos.x <= button_x + button_width
-                && mouse_pos.y >= button_y
-                && mouse_pos.y <= button_y + button_height
+            banner_layout.is_button_hovered(window_width, mouse_pos.x, mouse_pos.y)
         } else {
             false
         };
@@ -890,12 +939,11 @@ fn run_ui_process(shared_state: *mut SharedState) {
         );
 
         if !has_permission {
-            // Permission warning banner - centered horizontally
-            let window_width = window_width;
-            let banner_width = 570.0; // Fits well in 770px window with padding
-            let banner_height = 50.0;
-            let banner_x = (window_width - banner_width) / 2.0;
-            let banner_y = 20.0;
+            // Permission warning banner - use consistent layout calculations
+            let banner_x = banner_layout.banner_x(window_width);
+            let banner_y = banner_layout.banner_y;
+            let banner_width = banner_layout.banner_width;
+            let banner_height = banner_layout.banner_height;
             let banner_rect = Rectangle::new(banner_x, banner_y, banner_width, banner_height);
 
             // Background with orange opacity (matching .orange.opacity(0.1))
@@ -922,18 +970,13 @@ fn run_ui_process(shared_state: *mut SharedState) {
                 Color::new(255, 165, 0, 255), // Orange text
             );
 
-            // "Open Settings" button area (right side of banner)
-            let button_width = 100.0;
-            let button_height = 20.0;
-            let button_x = banner_x + banner_width - button_width - 15.0;
-            let button_y = banner_y + (banner_height - button_height) / 2.0;
-            let button_rect = Rectangle::new(button_x, button_y, button_width, button_height);
+            // "Open Settings" button area (right side of banner) - use consistent calculations
+            let button_x = banner_layout.button_x(window_width);
+            let button_y = banner_layout.button_y();
 
-            // Check if mouse is over button
-            let is_button_hovered = mouse_pos.x >= button_rect.x
-                && mouse_pos.x <= button_rect.x + button_rect.width
-                && mouse_pos.y >= button_rect.y
-                && mouse_pos.y <= button_rect.y + button_rect.height;
+            // Check if mouse is over button (use same calculation as cursor logic)
+            let is_button_hovered =
+                banner_layout.is_button_hovered(window_width, mouse_pos.x, mouse_pos.y);
 
             // Button text
             let button_color = if is_button_hovered {

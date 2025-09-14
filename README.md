@@ -440,3 +440,9 @@ I don't know when did you break them, but:
   - `T` doesn't have the coresponding BOMB icon in below.
   - Pressing `T` dosen't light up the square.
 ```
+
+###### Part 6
+
+```md
+The hover detection is off. Also, you should not hardcode values.
+```
