@@ -10,27 +10,166 @@ use std::slice;
 #[repr(C)]
 pub struct SharedState {
     pub has_accessibility_permission: bool,
-    // Key states array - index corresponds to key codes
-    // For now we'll use a simple approach: index 0 = A key
-    pub key_states: [bool; 256], // Support for 256 different keys
+    // Current keyboard layout name (null-terminated string, max 63 chars + null terminator)
+    pub current_layout_name: [u8; 64],
+    // Key states for the specific keys we monitor
+    pub key_states: KeyStates,
+}
+
+// Specific keys we monitor based on SPECIFICATION.md
+#[repr(C)]
+pub struct KeyStates {
+    // Left side keys
+    pub esc: bool,
+    pub key_a: bool, // A position (keycode 0)
+    pub key_r: bool, // R position (keycode 1)
+    pub key_s: bool, // S position (keycode 2)
+    pub key_t: bool, // T position (keycode 3)
+    pub backspace: bool,
+    // Right side keys
+    pub key_n: bool, // N position (keycode 38)
+    pub key_e: bool, // E position (keycode 40)
+    pub key_i: bool, // I position (keycode 37)
+    pub key_o: bool, // O position (keycode 41)
+    pub space: bool,
+    // Key labels for current layout (null-terminated strings)
+    pub label_a: [u8; 8], // Label for A position
+    pub label_r: [u8; 8], // Label for R position
+    pub label_s: [u8; 8], // Label for S position
+    pub label_t: [u8; 8], // Label for T position
+    pub label_n: [u8; 8], // Label for N position
+    pub label_e: [u8; 8], // Label for E position
+    pub label_i: [u8; 8], // Label for I position
+    pub label_o: [u8; 8], // Label for O position
 }
 
 impl SharedState {
-    const A_KEY_INDEX: usize = 0;
-
     pub fn new() -> Self {
         Self {
             has_accessibility_permission: false,
-            key_states: [false; 256],
+            current_layout_name: [0; 64],
+            key_states: KeyStates::new(),
         }
     }
 
-    pub fn set_a_key(&mut self, pressed: bool) {
-        self.key_states[Self::A_KEY_INDEX] = pressed;
+    pub fn set_layout_name(&mut self, name: &str) {
+        // Clear the array first
+        self.current_layout_name = [0; 64];
+
+        // Copy the string bytes, ensuring we don't exceed the buffer size
+        let bytes = name.as_bytes();
+        let copy_len = std::cmp::min(bytes.len(), 63); // Leave room for null terminator
+        self.current_layout_name[..copy_len].copy_from_slice(&bytes[..copy_len]);
+        // Array is already null-terminated due to initialization with zeros
     }
 
-    pub fn is_a_key_pressed(&self) -> bool {
-        self.key_states[Self::A_KEY_INDEX]
+    pub fn get_layout_name(&self) -> String {
+        // Find the null terminator
+        let null_pos = self
+            .current_layout_name
+            .iter()
+            .position(|&b| b == 0)
+            .unwrap_or(64);
+        String::from_utf8_lossy(&self.current_layout_name[..null_pos]).to_string()
+    }
+
+    pub fn set_key_label(&mut self, key_position: &str, label: &str) {
+        let target_array = match key_position {
+            "a" => &mut self.key_states.label_a,
+            "r" => &mut self.key_states.label_r,
+            "s" => &mut self.key_states.label_s,
+            "t" => &mut self.key_states.label_t,
+            "n" => &mut self.key_states.label_n,
+            "e" => &mut self.key_states.label_e,
+            "i" => &mut self.key_states.label_i,
+            "o" => &mut self.key_states.label_o,
+            _ => return,
+        };
+
+        // Clear the array first
+        *target_array = [0; 8];
+
+        // Copy the string bytes, ensuring we don't exceed the buffer size
+        let bytes = label.as_bytes();
+        let copy_len = std::cmp::min(bytes.len(), 7); // Leave room for null terminator
+        target_array[..copy_len].copy_from_slice(&bytes[..copy_len]);
+    }
+
+    pub fn get_key_label(&self, key_position: &str) -> String {
+        let source_array = match key_position {
+            "a" => &self.key_states.label_a,
+            "r" => &self.key_states.label_r,
+            "s" => &self.key_states.label_s,
+            "t" => &self.key_states.label_t,
+            "n" => &self.key_states.label_n,
+            "e" => &self.key_states.label_e,
+            "i" => &self.key_states.label_i,
+            "o" => &self.key_states.label_o,
+            _ => return "?".to_string(),
+        };
+
+        let null_pos = source_array.iter().position(|&b| b == 0).unwrap_or(8);
+        String::from_utf8_lossy(&source_array[..null_pos]).to_string()
+    }
+}
+
+impl KeyStates {
+    pub fn new() -> Self {
+        Self {
+            esc: false,
+            key_a: false,
+            key_r: false,
+            key_s: false,
+            key_t: false,
+            backspace: false,
+            key_n: false,
+            key_e: false,
+            key_i: false,
+            key_o: false,
+            space: false,
+            label_a: [0; 8],
+            label_r: [0; 8],
+            label_s: [0; 8],
+            label_t: [0; 8],
+            label_n: [0; 8],
+            label_e: [0; 8],
+            label_i: [0; 8],
+            label_o: [0; 8],
+        }
+    }
+
+    pub fn set_key_state(&mut self, keycode: u32, pressed: bool) {
+        match keycode {
+            53 => self.esc = pressed,       // ESC
+            0 => self.key_a = pressed,      // A position
+            1 => self.key_r = pressed,      // R position (S in QWERTY)
+            2 => self.key_s = pressed,      // S position (D in QWERTY)
+            3 => self.key_t = pressed,      // T position (F in QWERTY)
+            51 => self.backspace = pressed, // Backspace
+            38 => self.key_n = pressed,     // N position (J in QWERTY)
+            40 => self.key_e = pressed,     // E position (K in QWERTY)
+            37 => self.key_i = pressed,     // I position (L in QWERTY)
+            41 => self.key_o = pressed,     // O position (; in QWERTY)
+            49 => self.space = pressed,     // Space
+            _ => {}                         // Ignore other keys
+        }
+    }
+
+    pub fn get_key_state(&self, keycode: u32) -> bool {
+        match keycode {
+            53 => self.esc,
+            0 => self.key_a,
+            1 => self.key_r,
+            2 => self.key_s,
+            3 => self.key_t,
+            51 => self.backspace,
+            38 => self.key_n,
+            40 => self.key_e,
+            37 => self.key_i,
+            41 => self.key_o,
+            49 => self.space,
+            _ => false,
+        }
     }
 }
 
@@ -176,13 +315,13 @@ fn run_key_monitor_process(
 
         match event.event_type {
             rdev::EventType::KeyPress(key) => {
-                if key == rdev::Key::KeyA {
-                    state.set_a_key(true);
+                if let Some(keycode) = rdev_key_to_keycode(key) {
+                    state.key_states.set_key_state(keycode, true);
                 }
             }
             rdev::EventType::KeyRelease(key) => {
-                if key == rdev::Key::KeyA {
-                    state.set_a_key(false);
+                if let Some(keycode) = rdev_key_to_keycode(key) {
+                    state.key_states.set_key_state(keycode, false);
                 }
             }
             _ => {} // Ignore other events
@@ -199,6 +338,24 @@ fn run_key_monitor_process(
 }
 
 // Check accessibility permission using system call
+// Convert rdev Key to macOS keycode
+fn rdev_key_to_keycode(key: rdev::Key) -> Option<u32> {
+    match key {
+        rdev::Key::Escape => Some(53),
+        rdev::Key::KeyA => Some(0),
+        rdev::Key::KeyS => Some(1), // This is the R position in Colemak
+        rdev::Key::KeyD => Some(2), // This is the S position in Colemak
+        rdev::Key::KeyF => Some(3), // This is the T position in Colemak
+        rdev::Key::Backspace => Some(51),
+        rdev::Key::KeyJ => Some(38), // This is the N position in Colemak
+        rdev::Key::KeyK => Some(40), // This is the E position in Colemak
+        rdev::Key::KeyL => Some(37), // This is the I position in Colemak
+        rdev::Key::SemiColon => Some(41), // This is the O position in Colemak
+        rdev::Key::Space => Some(49),
+        _ => None,
+    }
+}
+
 fn check_accessibility_permission() -> bool {
     use std::process::Command;
 
@@ -214,8 +371,299 @@ fn check_accessibility_permission() -> bool {
     }
 }
 
+fn draw_keyboard_layout(d: &mut RaylibDrawHandle, state: &SharedState, has_permission: bool) {
+    // Layout constants - matching SPECIFICATION.md layout
+    const KEY_SIZE: f32 = 60.0;
+    const KEY_SPACING: f32 = 10.0;
+    const START_X: f32 = 60.0;
+    const START_Y: f32 = 120.0;
+
+    // Left side keys: ESC to the left of A, then A, R, S, T in a row
+    // ESC should be at the left of A according to specification
+    let left_keys = [
+        ("ESC", 53, START_X, START_Y, KEY_SIZE, KEY_SIZE), // ESC at the left
+        (
+            "A",
+            0,
+            START_X + KEY_SIZE + KEY_SPACING,
+            START_Y,
+            KEY_SIZE,
+            KEY_SIZE,
+        ),
+        (
+            "R",
+            1,
+            START_X + (KEY_SIZE + KEY_SPACING) * 2.0,
+            START_Y,
+            KEY_SIZE,
+            KEY_SIZE,
+        ),
+        (
+            "S",
+            2,
+            START_X + (KEY_SIZE + KEY_SPACING) * 3.0,
+            START_Y,
+            KEY_SIZE,
+            KEY_SIZE,
+        ),
+        (
+            "T",
+            3,
+            START_X + (KEY_SIZE + KEY_SPACING) * 4.0,
+            START_Y,
+            KEY_SIZE,
+            KEY_SIZE,
+        ),
+    ];
+
+    // BACKSPACE - aligned with A-T, not with ESC
+    let backspace_x = START_X + KEY_SIZE + KEY_SPACING; // Start at A position
+    let backspace_width = (KEY_SIZE + KEY_SPACING) * 4.0 - KEY_SPACING; // Span A through T
+    let backspace = (
+        "BACKSPACE",
+        51,
+        backspace_x,
+        START_Y + KEY_SIZE + KEY_SPACING,
+        backspace_width,
+        KEY_SIZE,
+    );
+
+    // Right side keys: N, E, I, O
+    let right_start_x = START_X + (KEY_SIZE + KEY_SPACING) * 6.0; // Leave gap after left side
+    let right_keys = [
+        ("N", 38, right_start_x, START_Y, KEY_SIZE, KEY_SIZE),
+        (
+            "E",
+            40,
+            right_start_x + KEY_SIZE + KEY_SPACING,
+            START_Y,
+            KEY_SIZE,
+            KEY_SIZE,
+        ),
+        (
+            "I",
+            37,
+            right_start_x + (KEY_SIZE + KEY_SPACING) * 2.0,
+            START_Y,
+            KEY_SIZE,
+            KEY_SIZE,
+        ),
+        (
+            "O",
+            41,
+            right_start_x + (KEY_SIZE + KEY_SPACING) * 3.0,
+            START_Y,
+            KEY_SIZE,
+            KEY_SIZE,
+        ),
+    ];
+
+    // SPACE - spanning the right side keys
+    let space_width = (KEY_SIZE + KEY_SPACING) * 4.0 - KEY_SPACING;
+    let space = (
+        "SPACE",
+        49,
+        right_start_x,
+        START_Y + KEY_SIZE + KEY_SPACING,
+        space_width,
+        KEY_SIZE,
+    );
+
+    // Draw all keys
+    for &(label, keycode, x, y, width, height) in &left_keys {
+        draw_key(
+            d,
+            label,
+            keycode,
+            x,
+            y,
+            width,
+            height,
+            state,
+            has_permission,
+        );
+    }
+
+    for &(label, keycode, x, y, width, height) in &right_keys {
+        draw_key(
+            d,
+            label,
+            keycode,
+            x,
+            y,
+            width,
+            height,
+            state,
+            has_permission,
+        );
+    }
+
+    // Draw special keys
+    draw_key(
+        d,
+        backspace.0,
+        backspace.1,
+        backspace.2,
+        backspace.3,
+        backspace.4,
+        backspace.5,
+        state,
+        has_permission,
+    );
+    draw_key(
+        d,
+        space.0,
+        space.1,
+        space.2,
+        space.3,
+        space.4,
+        space.5,
+        state,
+        has_permission,
+    );
+
+    // Draw layout name at top left
+    let layout_name = state.get_layout_name();
+    if !layout_name.is_empty() {
+        d.draw_text(
+            &format!("Layout: {}", layout_name),
+            20,
+            80,
+            12,
+            Color::DARKGRAY,
+        );
+    }
+}
+
+fn draw_key(
+    d: &mut RaylibDrawHandle,
+    default_label: &str,
+    keycode: u32,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    state: &SharedState,
+    has_permission: bool,
+) {
+    let key_rect = Rectangle::new(x, y, width, height);
+    let is_pressed = state.key_states.get_key_state(keycode);
+
+    // Determine key colors based on state
+    let (bg_color, border_color, text_color) = if !has_permission {
+        // Red when permissions missing
+        (
+            Color::new(255, 200, 200, 255),
+            Color::new(200, 100, 100, 255),
+            Color::DARKRED,
+        )
+    } else if is_pressed {
+        // Pressed state - highlighted
+        (
+            Color::new(150, 200, 255, 255),
+            Color::new(100, 150, 200, 255),
+            Color::BLACK,
+        )
+    } else {
+        // Normal state
+        (
+            Color::new(240, 240, 240, 255),
+            Color::new(180, 180, 180, 255),
+            Color::BLACK,
+        )
+    };
+
+    // Draw key background
+    d.draw_rectangle_rounded(key_rect, 0.1, 10, bg_color);
+
+    // Draw key border
+    d.draw_rectangle_rounded_lines(key_rect, 0.1, 10, border_color);
+
+    // Get the main label for this key (from layout or default)
+    let main_label = get_key_main_label(default_label, keycode, state);
+
+    // Draw main label (center, prominent)
+    let text_size = if width > 100.0 { 16 } else { 20 };
+    let text_width = d.measure_text(&main_label, text_size);
+    let text_x = (x + width / 2.0 - text_width as f32 / 2.0) as i32;
+    let text_y = (y + height / 2.0 - text_size as f32 / 2.0) as i32;
+    d.draw_text(&main_label, text_x, text_y, text_size, text_color);
+
+    // Draw QWERTY hint (top-left, blue, small) - shows QWERTY position for non-special keys
+    let qwerty_hint = get_qwerty_hint(keycode);
+    if !qwerty_hint.is_empty() && main_label.to_uppercase() != qwerty_hint.to_uppercase() {
+        d.draw_text(
+            &qwerty_hint,
+            (x + 3.0) as i32,
+            (y + 3.0) as i32,
+            8,
+            Color::BLUE,
+        );
+    }
+
+    // Draw functional icon (bottom) for gaming context
+    let icon = get_gaming_icon(keycode);
+    if !icon.is_empty() {
+        let icon_y = (y + height - 12.0) as i32;
+        let icon_width = d.measure_text(&icon, 10);
+        let icon_x = (x + width / 2.0 - icon_width as f32 / 2.0) as i32;
+        d.draw_text(&icon, icon_x, icon_y, 10, Color::DARKGRAY);
+    }
+}
+
+fn get_key_main_label(default_label: &str, keycode: u32, state: &SharedState) -> String {
+    // Get label from current keyboard layout stored in shared state
+    let layout_label = match keycode {
+        0 => state.get_key_label("a"),
+        1 => state.get_key_label("r"),
+        2 => state.get_key_label("s"),
+        3 => state.get_key_label("t"),
+        38 => state.get_key_label("n"),
+        40 => state.get_key_label("e"),
+        37 => state.get_key_label("i"),
+        41 => state.get_key_label("o"),
+        _ => String::new(),
+    };
+
+    if !layout_label.is_empty() && layout_label != "?" {
+        layout_label.to_uppercase()
+    } else {
+        default_label.to_string()
+    }
+}
+
+fn get_gaming_icon(keycode: u32) -> &'static str {
+    // Gaming context icons based on QWERTY positions (using simple ASCII)
+    match keycode {
+        2 => "Retry",  // S position -> Retry
+        3 => "Bomb",   // F position -> Bomb
+        38 => "<-",    // J position -> Left Arrow
+        40 => "^",     // K position -> Up Arrow
+        37 => "v",     // L position -> Down Arrow
+        41 => "->",    // ; position -> Right Arrow
+        51 => "Shot",  // Backspace -> Shot
+        49 => "Focus", // Space -> Slow-Movement Mode (Focus Mode)
+        _ => "",
+    }
+}
+
+fn get_qwerty_hint(keycode: u32) -> &'static str {
+    // Returns the QWERTY character for the physical key position
+    match keycode {
+        0 => "A",  // A position
+        1 => "S",  // S position in QWERTY
+        2 => "D",  // D position in QWERTY
+        3 => "F",  // F position in QWERTY
+        38 => "J", // J position in QWERTY
+        40 => "K", // K position in QWERTY
+        37 => "L", // L position in QWERTY
+        41 => ";", // ; position in QWERTY
+        _ => "",   // No hint for special keys
+    }
+}
+
 fn run_ui_process(shared_state: *mut SharedState) {
-    let (mut rl, thread) = raylib::init().size(640, 480).title("THKeyVis").build();
+    let (mut rl, thread) = raylib::init().size(800, 300).title("THKeyVis").build();
     rl.set_target_fps(120);
 
     while !rl.window_should_close() {
@@ -282,40 +730,8 @@ fn run_ui_process(shared_state: *mut SharedState) {
             }
         }
 
-        // Draw the A key representation
-        let a_key_pressed = state.is_a_key_pressed();
-        let key_rect = Rectangle::new(100.0, 150.0, 60.0, 60.0);
-
-        // Color based on key state
-        let (bg_color, border_color, text_color) = if a_key_pressed {
-            // Pressed state - darker colors
-            (
-                Color::new(200, 200, 255, 255),
-                Color::new(100, 100, 200, 255),
-                Color::BLACK,
-            )
-        } else {
-            // Unpressed state - lighter colors
-            (
-                Color::new(240, 240, 240, 255),
-                Color::new(180, 180, 180, 255),
-                Color::BLACK,
-            )
-        };
-
-        // Draw key background
-        d.draw_rectangle_rounded(key_rect, 0.1, 10, bg_color);
-
-        // Draw key border
-        d.draw_rectangle_rounded_lines(key_rect, 0.1, 10, border_color);
-
-        // Draw the "A" text in the center
-        let text_size = 24;
-        let text_width = d.measure_text("A", text_size);
-        let text_x = (key_rect.x + key_rect.width / 2.0 - text_width as f32 / 2.0) as i32;
-        let text_y = (key_rect.y + key_rect.height / 2.0 - text_size as f32 / 2.0) as i32;
-
-        d.draw_text("A", text_x, text_y, text_size, text_color);
+        // Draw keyboard layout according to SPECIFICATION.md
+        draw_keyboard_layout(&mut d, state, has_permission);
     }
 }
 
@@ -343,6 +759,51 @@ pub extern "C" fn get_accessibility_permission() -> bool {
             (*SHARED_STATE_PTR).has_accessibility_permission
         } else {
             PERMISSION_STATE.has_accessibility_permission
+        }
+    }
+}
+
+// FFI functions for keyboard layout management
+#[unsafe(no_mangle)]
+pub extern "C" fn set_layout_name(name_ptr: *const std::os::raw::c_char) {
+    unsafe {
+        if !SHARED_STATE_PTR.is_null() && !name_ptr.is_null() {
+            let name_cstr = std::ffi::CStr::from_ptr(name_ptr);
+            if let Ok(name_str) = name_cstr.to_str() {
+                (*SHARED_STATE_PTR).set_layout_name(name_str);
+            }
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn set_key_label(
+    position_ptr: *const std::os::raw::c_char,
+    label_ptr: *const std::os::raw::c_char,
+) {
+    unsafe {
+        if !SHARED_STATE_PTR.is_null() && !position_ptr.is_null() && !label_ptr.is_null() {
+            let position_cstr = std::ffi::CStr::from_ptr(position_ptr);
+            let label_cstr = std::ffi::CStr::from_ptr(label_ptr);
+
+            if let (Ok(position_str), Ok(label_str)) = (position_cstr.to_str(), label_cstr.to_str())
+            {
+                (*SHARED_STATE_PTR).set_key_label(position_str, label_str);
+            }
+        }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn get_layout_name(buffer: *mut std::os::raw::c_char, buffer_size: usize) {
+    unsafe {
+        if !SHARED_STATE_PTR.is_null() && !buffer.is_null() && buffer_size > 0 {
+            let layout_name = (*SHARED_STATE_PTR).get_layout_name();
+            let name_bytes = layout_name.as_bytes();
+            let copy_len = std::cmp::min(name_bytes.len(), buffer_size - 1);
+
+            std::ptr::copy_nonoverlapping(name_bytes.as_ptr(), buffer as *mut u8, copy_len);
+            *((buffer as *mut u8).add(copy_len)) = 0; // Null terminator
         }
     }
 }

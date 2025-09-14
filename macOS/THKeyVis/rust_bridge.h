@@ -2,6 +2,7 @@
 #define rust_bridge_h
 
 #include <stdbool.h>
+#include <stddef.h>
 
 // Function pointer type for permission monitoring callback
 typedef void (*permission_monitoring_callback_t)(void);
@@ -12,6 +13,11 @@ extern void rust_main(void);                                                    
 extern void rust_init(void);                                                    // Legacy init function
 extern void set_accessibility_permission(bool has_permission);
 extern bool get_accessibility_permission(void);
+
+// Keyboard layout management functions
+extern void set_layout_name(const char *name);
+extern void set_key_label(const char *position, const char *label);
+extern void get_layout_name(char *buffer, size_t buffer_size);
 
 // Function that Swift implements for Rust to call
 void swift_open_system_preferences(void);

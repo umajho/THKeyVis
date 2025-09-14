@@ -277,3 +277,29 @@ not legacy, other swift files are legacy.)
 ```md
 please focus on expected behaviors, not implementation details.
 ```
+
+#### Episode 5
+
+##### Prompt
+
+###### Part 1
+
+```md
+Read macOS/SPECIFICATION.md, implement the features related to keystroke
+monitoring and visualization in the new rust+swift architecture. You can ignore
+requirements about window related functionality for now.
+```
+
+```md
+It can correctly the keys I'm pressing no matter the keyboard layout, but:
+
+- the UI layout is off (see the screenshot).
+- the window size is bad.
+- esc should be at the left of `A`.
+- space/backspace/esc should be as high as the normal keys.
+- all the icons are shown as `?`.
+- The QWERTY-hint small blue letters (at the top-left corner of the squares) are
+  missing.
+- When I switched the keyboard layout, it didn't change the key names
+  accordingly. (It seems they are hardcoded for colemak for now.)
+```

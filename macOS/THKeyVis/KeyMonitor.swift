@@ -27,6 +27,11 @@ class KeyMonitor: ObservableObject {
         checkAndRequestPermission()
         startPermissionMonitoring()
         setupApplicationNotifications()
+        
+        // Force an initial layout update after a short delay to ensure Rust is initialized
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.updateCurrentInputSource()
+        }
     }
     
     private func setupApplicationNotifications() {
@@ -353,6 +358,9 @@ class KeyMonitor: ObservableObject {
                     self.currentLayoutName = name
                 }
                 lastLayoutName = name
+                
+                // Update Rust with the new layout information
+                updateRustLayoutInfo(name: name, inputSource: currentSource)
             }
         }
     }
@@ -370,7 +378,33 @@ class KeyMonitor: ObservableObject {
                 }
                 lastLayoutName = name
                 print("Keyboard layout changed to: \(name)")
+                
+                // Update Rust with the new layout information
+                updateRustLayoutInfo(name: name, inputSource: inputSource)
             }
+        }
+    }
+    
+    private func updateRustLayoutInfo(name: String, inputSource: TISInputSource) {
+        // Send layout name to Rust
+        set_layout_name(name)
+        
+        // Update key labels for each monitored key position
+        let keyPositions = [
+            ("a", 0),   // A position
+            ("r", 1),   // R position (S in QWERTY) 
+            ("s", 2),   // S position (D in QWERTY)
+            ("t", 3),   // T position (F in QWERTY)
+            ("n", 38),  // N position (J in QWERTY)
+            ("e", 40),  // E position (K in QWERTY)
+            ("i", 37),  // I position (L in QWERTY)
+            ("o", 41),  // O position (; in QWERTY)
+        ]
+        
+        for (position, keyCode) in keyPositions {
+            let label = getCharacterForKeyCode(keyCode: keyCode) ?? position.uppercased()
+            print("Setting key label for position \(position) (keyCode \(keyCode)): \(label)")
+            set_key_label(position, label)
         }
     }
     
