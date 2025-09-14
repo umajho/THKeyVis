@@ -20,27 +20,27 @@ pub struct SharedState {
 #[repr(C)]
 pub struct KeyStates {
     // Left side keys
-    pub esc: bool,
-    pub key_a: bool, // A position (keycode 0)
-    pub key_r: bool, // R position (keycode 1)
-    pub key_s: bool, // S position (keycode 2)
-    pub key_t: bool, // T position (keycode 3)
-    pub backspace: bool,
+    pub esc: bool,       // keycode 53
+    pub key_0: bool,     // keycode 0 (A in QWERTY)
+    pub key_1: bool,     // keycode 1 (S in QWERTY)
+    pub key_2: bool,     // keycode 2 (D in QWERTY)
+    pub key_3: bool,     // keycode 3 (F in QWERTY)
+    pub backspace: bool, // keycode 51
     // Right side keys
-    pub key_n: bool, // N position (keycode 38)
-    pub key_e: bool, // E position (keycode 40)
-    pub key_i: bool, // I position (keycode 37)
-    pub key_o: bool, // O position (keycode 41)
-    pub space: bool,
+    pub key_38: bool, // keycode 38 (J in QWERTY)
+    pub key_40: bool, // keycode 40 (K in QWERTY)
+    pub key_37: bool, // keycode 37 (L in QWERTY)
+    pub key_41: bool, // keycode 41 (; in QWERTY)
+    pub space: bool,  // keycode 49
     // Key labels for current layout (null-terminated strings)
-    pub label_a: [u8; 8], // Label for A position
-    pub label_r: [u8; 8], // Label for R position
-    pub label_s: [u8; 8], // Label for S position
-    pub label_t: [u8; 8], // Label for T position
-    pub label_n: [u8; 8], // Label for N position
-    pub label_e: [u8; 8], // Label for E position
-    pub label_i: [u8; 8], // Label for I position
-    pub label_o: [u8; 8], // Label for O position
+    pub label_0: [u8; 8],  // Label for keycode 0 (A in QWERTY)
+    pub label_1: [u8; 8],  // Label for keycode 1 (S in QWERTY)
+    pub label_2: [u8; 8],  // Label for keycode 2 (D in QWERTY)
+    pub label_3: [u8; 8],  // Label for keycode 3 (F in QWERTY)
+    pub label_38: [u8; 8], // Label for keycode 38 (J in QWERTY)
+    pub label_40: [u8; 8], // Label for keycode 40 (K in QWERTY)
+    pub label_37: [u8; 8], // Label for keycode 37 (L in QWERTY)
+    pub label_41: [u8; 8], // Label for keycode 41 (; in QWERTY)
 }
 
 impl SharedState {
@@ -75,14 +75,14 @@ impl SharedState {
 
     pub fn set_key_label(&mut self, key_position: &str, label: &str) {
         let target_array = match key_position {
-            "a" => &mut self.key_states.label_a,
-            "r" => &mut self.key_states.label_r,
-            "s" => &mut self.key_states.label_s,
-            "t" => &mut self.key_states.label_t,
-            "n" => &mut self.key_states.label_n,
-            "e" => &mut self.key_states.label_e,
-            "i" => &mut self.key_states.label_i,
-            "o" => &mut self.key_states.label_o,
+            "a" => &mut self.key_states.label_0,  // A key -> keycode 0
+            "s" => &mut self.key_states.label_1,  // S key -> keycode 1
+            "d" => &mut self.key_states.label_2,  // D key -> keycode 2
+            "f" => &mut self.key_states.label_3,  // F key -> keycode 3
+            "j" => &mut self.key_states.label_38, // J key -> keycode 38
+            "k" => &mut self.key_states.label_40, // K key -> keycode 40
+            "l" => &mut self.key_states.label_37, // L key -> keycode 37
+            ";" => &mut self.key_states.label_41, // ; key -> keycode 41
             _ => return,
         };
 
@@ -97,14 +97,14 @@ impl SharedState {
 
     pub fn get_key_label(&self, key_position: &str) -> String {
         let source_array = match key_position {
-            "a" => &self.key_states.label_a,
-            "r" => &self.key_states.label_r,
-            "s" => &self.key_states.label_s,
-            "t" => &self.key_states.label_t,
-            "n" => &self.key_states.label_n,
-            "e" => &self.key_states.label_e,
-            "i" => &self.key_states.label_i,
-            "o" => &self.key_states.label_o,
+            "a" => &self.key_states.label_0,  // A key -> keycode 0
+            "s" => &self.key_states.label_1,  // S key -> keycode 1
+            "d" => &self.key_states.label_2,  // D key -> keycode 2
+            "f" => &self.key_states.label_3,  // F key -> keycode 3
+            "j" => &self.key_states.label_38, // J key -> keycode 38
+            "k" => &self.key_states.label_40, // K key -> keycode 40
+            "l" => &self.key_states.label_37, // L key -> keycode 37
+            ";" => &self.key_states.label_41, // ; key -> keycode 41
             _ => return "?".to_string(),
         };
 
@@ -117,39 +117,39 @@ impl KeyStates {
     pub fn new() -> Self {
         Self {
             esc: false,
-            key_a: false,
-            key_r: false,
-            key_s: false,
-            key_t: false,
+            key_0: false,
+            key_1: false,
+            key_2: false,
+            key_3: false,
             backspace: false,
-            key_n: false,
-            key_e: false,
-            key_i: false,
-            key_o: false,
+            key_38: false,
+            key_40: false,
+            key_37: false,
+            key_41: false,
             space: false,
-            label_a: [0; 8],
-            label_r: [0; 8],
-            label_s: [0; 8],
-            label_t: [0; 8],
-            label_n: [0; 8],
-            label_e: [0; 8],
-            label_i: [0; 8],
-            label_o: [0; 8],
+            label_0: [0; 8],
+            label_1: [0; 8],
+            label_2: [0; 8],
+            label_3: [0; 8],
+            label_38: [0; 8],
+            label_40: [0; 8],
+            label_37: [0; 8],
+            label_41: [0; 8],
         }
     }
 
     pub fn set_key_state(&mut self, keycode: u32, pressed: bool) {
         match keycode {
             53 => self.esc = pressed,       // ESC
-            0 => self.key_a = pressed,      // A position
-            1 => self.key_r = pressed,      // R position (S in QWERTY)
-            2 => self.key_s = pressed,      // S position (D in QWERTY)
-            3 => self.key_t = pressed,      // T position (F in QWERTY)
+            0 => self.key_0 = pressed,      // keycode 0 (A in QWERTY)
+            1 => self.key_1 = pressed,      // keycode 1 (S in QWERTY)
+            2 => self.key_2 = pressed,      // keycode 2 (D in QWERTY)
+            3 => self.key_3 = pressed,      // keycode 3 (F in QWERTY)
             51 => self.backspace = pressed, // Backspace
-            38 => self.key_n = pressed,     // N position (J in QWERTY)
-            40 => self.key_e = pressed,     // E position (K in QWERTY)
-            37 => self.key_i = pressed,     // I position (L in QWERTY)
-            41 => self.key_o = pressed,     // O position (; in QWERTY)
+            38 => self.key_38 = pressed,    // keycode 38 (J in QWERTY)
+            40 => self.key_40 = pressed,    // keycode 40 (K in QWERTY)
+            37 => self.key_37 = pressed,    // keycode 37 (L in QWERTY)
+            41 => self.key_41 = pressed,    // keycode 41 (; in QWERTY)
             49 => self.space = pressed,     // Space
             _ => {}                         // Ignore other keys
         }
@@ -158,15 +158,15 @@ impl KeyStates {
     pub fn get_key_state(&self, keycode: u32) -> bool {
         match keycode {
             53 => self.esc,
-            0 => self.key_a,
-            1 => self.key_r,
-            2 => self.key_s,
-            3 => self.key_t,
+            0 => self.key_0,
+            1 => self.key_1,
+            2 => self.key_2,
+            3 => self.key_3,
             51 => self.backspace,
-            38 => self.key_n,
-            40 => self.key_e,
-            37 => self.key_i,
-            41 => self.key_o,
+            38 => self.key_38,
+            40 => self.key_40,
+            37 => self.key_37,
+            41 => self.key_41,
             49 => self.space,
             _ => false,
         }
@@ -649,14 +649,14 @@ fn draw_key(
 fn get_key_main_label(default_label: &str, keycode: u32, state: &SharedState) -> String {
     // Get label from current keyboard layout stored in shared state
     let layout_label = match keycode {
-        0 => state.get_key_label("a"),
-        1 => state.get_key_label("r"),
-        2 => state.get_key_label("s"),
-        3 => state.get_key_label("t"),
-        38 => state.get_key_label("n"),
-        40 => state.get_key_label("e"),
-        37 => state.get_key_label("i"),
-        41 => state.get_key_label("o"),
+        0 => state.get_key_label("a"),  // keycode 0 = A key
+        1 => state.get_key_label("s"),  // keycode 1 = S key
+        2 => state.get_key_label("d"),  // keycode 2 = D key
+        3 => state.get_key_label("f"),  // keycode 3 = F key
+        38 => state.get_key_label("j"), // keycode 38 = J key
+        40 => state.get_key_label("k"), // keycode 40 = K key
+        37 => state.get_key_label("l"), // keycode 37 = L key
+        41 => state.get_key_label(";"), // keycode 41 = ; key
         _ => String::new(),
     };
 

@@ -368,3 +368,15 @@ instead of the D key (in QWERTY). Please fix it.
 Also, the A key and the D key should always be greyed out, since they are not
 used.
 ```
+
+###### Part 6
+
+```md
+In `main.rs`'s `struct KeyStates`, I see that you use the colemak layout for the
+field names. Shouldn't we use the QWERTY names, or even straightforwardly use
+the key code numbers?
+```
+
+```md
+You forgot to change the corresponding code in main.swift.
+```

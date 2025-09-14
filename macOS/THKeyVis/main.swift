@@ -48,14 +48,14 @@ func updateRustLayoutInfo(name: String, inputSource: TISInputSource) {
     
     // Update key labels for each monitored key position
     let keyPositions = [
-        ("a", 0),   // A position
-        ("r", 1),   // R position (S in QWERTY) 
-        ("s", 2),   // S position (D in QWERTY)
-        ("t", 3),   // T position (F in QWERTY)
-        ("n", 38),  // N position (J in QWERTY)
-        ("e", 40),  // E position (K in QWERTY)
-        ("i", 37),  // I position (L in QWERTY)
-        ("o", 41),  // O position (; in QWERTY)
+        ("a", 0),   // A key (keycode 0)
+        ("s", 1),   // S key (keycode 1) 
+        ("d", 2),   // D key (keycode 2)
+        ("f", 3),   // F key (keycode 3)
+        ("j", 38),  // J key (keycode 38)
+        ("k", 40),  // K key (keycode 40)
+        ("l", 37),  // L key (keycode 37)
+        (";", 41),  // ; key (keycode 41)
     ]
     
     for (position, keyCode) in keyPositions {
