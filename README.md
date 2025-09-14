@@ -478,3 +478,10 @@ fix that.
 Please add a FPS indicator below the “Layout: …” text, and then swap the two
 lines (so that the FPS indicator will be above the “Layout: …” text).
 ```
+
+###### Part 111
+
+```md
+I don't know why, but when the app's input monitoring permission got granted,
+the fps indicator disappered.
+```
