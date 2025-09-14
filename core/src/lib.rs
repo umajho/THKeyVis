@@ -45,9 +45,12 @@ static mut PERMISSION_STATE: PermissionState = PermissionState {
     has_accessibility_permission: false,
 };
 
-// This is the new main entry point that forks early
+// Type definition for permission monitoring callback
+type PermissionMonitoringCallback = unsafe extern "C" fn();
+
+// This is the new main entry point that forks early with permission monitoring callback
 #[unsafe(no_mangle)]
-pub extern "C" fn rust_main() {
+pub extern "C" fn rust_main_with_callback(callback: Option<PermissionMonitoringCallback>) {
     // Create shared memory file
     let shared_mem_path = "/tmp/thkeyvis_shared_state";
     let shared_state = create_shared_memory(shared_mem_path);
@@ -69,13 +72,19 @@ pub extern "C" fn rust_main() {
         }
         child_pid => {
             // Parent process: Run key monitoring and permission checking
-            run_key_monitor_process(shared_state, child_pid);
+            run_key_monitor_process(shared_state, child_pid, callback);
         }
     }
 }
 
+// Compatibility function that calls rust_main_with_callback with no callback
+#[unsafe(no_mangle)]
+pub extern "C" fn rust_main() {
+    rust_main_with_callback(None);
+}
+
 pub fn init() {
-    // Legacy function - now just calls the new main
+    // Legacy function - now just calls the new main with no callback
     rust_main();
 }
 
@@ -123,7 +132,11 @@ fn create_shared_memory(path: &str) -> *mut SharedState {
     ptr as *mut SharedState
 }
 
-fn run_key_monitor_process(shared_state: *mut SharedState, child_pid: i32) {
+fn run_key_monitor_process(
+    shared_state: *mut SharedState,
+    child_pid: i32,
+    callback: Option<PermissionMonitoringCallback>,
+) {
     println!("Parent process: Starting key monitoring...");
 
     // Set up signal handler to clean up when child exits
@@ -134,19 +147,28 @@ fn run_key_monitor_process(shared_state: *mut SharedState, child_pid: i32) {
         libc::signal(libc::SIGCHLD, signal_handler as usize);
     }
 
-    // Start a separate thread for permission checking
-    let permission_shared_state = shared_state as usize; // Convert to usize for thread safety
-    std::thread::spawn(move || {
-        let shared_ptr = permission_shared_state as *mut SharedState;
-        loop {
-            // Check accessibility permission every 500ms
-            let has_permission = check_accessibility_permission();
-            unsafe {
-                (*shared_ptr).has_accessibility_permission = has_permission;
-            }
-            std::thread::sleep(std::time::Duration::from_millis(500));
+    // Start permission monitoring - use Swift callback if provided, otherwise use Rust fallback
+    if let Some(permission_callback) = callback {
+        println!("Parent process: Starting Swift permission monitoring...");
+        unsafe {
+            permission_callback();
         }
-    });
+    } else {
+        println!("Parent process: Starting fallback Rust permission monitoring...");
+        // Start a separate thread for permission checking (fallback)
+        let permission_shared_state = shared_state as usize; // Convert to usize for thread safety
+        std::thread::spawn(move || {
+            let shared_ptr = permission_shared_state as *mut SharedState;
+            loop {
+                // Check accessibility permission every 500ms
+                let has_permission = check_accessibility_permission();
+                unsafe {
+                    (*shared_ptr).has_accessibility_permission = has_permission;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(500));
+            }
+        });
+    }
 
     // Start rdev listener - this is the parent process so no thread safety issues
     if let Err(error) = rdev::listen(move |event| {

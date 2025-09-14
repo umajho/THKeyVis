@@ -239,3 +239,12 @@ Thread 0 Crashed::  Dispatch queue: com.apple.main-thread
 21  dyld                          	       0x186ab6b98 start + 6076
 ```
 ````
+
+###### Part 2
+
+```md
+I still need the swift side to monitor the Accessibility permission. Maybe you
+should pass `startPermissionMonitoring` from the swift side to the rust side,
+and invoke that function after the fork in the parent process and before
+`rdev::listen`?
+```
