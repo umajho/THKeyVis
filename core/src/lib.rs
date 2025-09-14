@@ -621,33 +621,30 @@ fn draw_keyboard_layout(
         icons,
     );
 
-    // Draw FPS indicator at top left, aligned with ESC key's left edge
-    // Ensure FPS is always visible by using a minimum Y position
-    let fps_y = if start_y >= 40.0 {
-        start_y - 40.0
+    // Draw FPS indicator and Layout text on the same line
+    // Ensure both are always visible by using a minimum Y position
+    let text_y = if start_y >= 25.0 {
+        start_y - 25.0
     } else {
-        5.0 // Minimum Y position to keep FPS visible
+        5.0 // Minimum Y position to keep text visible
     };
+    
+    // Draw FPS indicator at left edge, aligned with ESC key
     d.draw_text(
         &format!("FPS: {}", d.get_fps()),
         layout.padding_x as i32,
-        fps_y as i32,
+        text_y as i32,
         12,
         Color::DARKGRAY,
     );
 
-    // Draw layout name below FPS, aligned with ESC key's left edge
+    // Draw layout name at fixed position from left edge (independent of FPS width)
     let layout_name = state.get_layout_name();
     if !layout_name.is_empty() {
-        let layout_y = if start_y >= 40.0 {
-            start_y - 25.0
-        } else {
-            20.0 // Position below FPS when space is limited
-        };
         d.draw_text(
             &format!("Layout: {}", layout_name),
-            layout.padding_x as i32,
-            layout_y as i32,
+            (layout.padding_x + 80.0) as i32, // Fixed offset from left edge
+            text_y as i32,
             12,
             Color::DARKGRAY,
         );
