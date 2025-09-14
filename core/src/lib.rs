@@ -621,7 +621,16 @@ fn draw_keyboard_layout(
         icons,
     );
 
-    // Draw layout name at top left, aligned with ESC key's left edge
+    // Draw FPS indicator at top left, aligned with ESC key's left edge
+    d.draw_text(
+        &format!("FPS: {}", d.get_fps()),
+        layout.padding_x as i32,
+        (start_y - 40.0) as i32,
+        12,
+        Color::DARKGRAY,
+    );
+
+    // Draw layout name below FPS, aligned with ESC key's left edge
     let layout_name = state.get_layout_name();
     if !layout_name.is_empty() {
         d.draw_text(
@@ -832,13 +841,13 @@ impl LayoutDimensions {
         // Calculate keyboard dimensions
         // Right side: 4 keys (N,E,I,O)
         let right_width = keyboard_layout.key_size * 4.0 + keyboard_layout.key_spacing * 3.0;
-        
+
         // Calculate actual keyboard span from leftmost to rightmost edge
         // Left edge: padding_x
-        // Right edge: right_start_x + right_width  
+        // Right edge: right_start_x + right_width
         let right_start_x = keyboard_layout.right_start_x();
         let keyboard_right_edge = right_start_x + right_width;
-        
+
         // Window width should have symmetric padding
         let window_width = (keyboard_right_edge + keyboard_layout.padding_x) as i32;
 

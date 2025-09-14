@@ -471,3 +471,10 @@ the esc key's square.
 The left padding of the window is a little wider than the right padding. Please
 fix that.
 ```
+
+###### Part 10
+
+```md
+Please add a FPS indicator below the “Layout: …” text, and then swap the two
+lines (so that the FPS indicator will be above the “Layout: …” text).
+```
