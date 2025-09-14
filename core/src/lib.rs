@@ -830,19 +830,17 @@ impl LayoutDimensions {
         let keyboard_layout = KeyboardLayout::new();
 
         // Calculate keyboard dimensions
-        // Left side: ESC + 4 keys (A,R,S,T) = 5 keys total
-        let left_width = keyboard_layout.key_size * 5.0 + keyboard_layout.key_spacing * 4.0;
-
-        // Gap between left and right sides
-        let gap_width = (keyboard_layout.key_size + keyboard_layout.key_spacing)
-            * (keyboard_layout.gap_multiplier - 5.0); // Additional gap beyond left keys
-
         // Right side: 4 keys (N,E,I,O)
         let right_width = keyboard_layout.key_size * 4.0 + keyboard_layout.key_spacing * 3.0;
-
-        // Total keyboard width
-        let keyboard_width = left_width + gap_width + right_width;
-        let window_width = (keyboard_width + keyboard_layout.padding_x * 2.0) as i32;
+        
+        // Calculate actual keyboard span from leftmost to rightmost edge
+        // Left edge: padding_x
+        // Right edge: right_start_x + right_width  
+        let right_start_x = keyboard_layout.right_start_x();
+        let keyboard_right_edge = right_start_x + right_width;
+        
+        // Window width should have symmetric padding
+        let window_width = (keyboard_right_edge + keyboard_layout.padding_x) as i32;
 
         // Calculate height
         // 2 rows of keys + backspace row + space row

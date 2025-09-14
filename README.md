@@ -464,3 +464,10 @@ to the implementation of draggable everwhere.
 Please make the beginning of the “Layout: …” text align with the left edge of
 the esc key's square.
 ```
+
+###### Part 9
+
+```md
+The left padding of the window is a little wider than the right padding. Please
+fix that.
+```
