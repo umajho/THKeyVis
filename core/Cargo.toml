@@ -8,3 +8,5 @@ crate-type = ["staticlib"]
 
 [dependencies]
 raylib = "5.5.1"
+rdev = "0.5.3"
+libc = "0.2"
