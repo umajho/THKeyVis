@@ -426,3 +426,17 @@ not what I want. I still want the gap to be larger.
 Instead of hardcode heights/weights, can we let rust calculate those values for
 us?
 ```
+
+###### Part 5
+
+```md
+I don't know when did you break them, but:
+
+- “Open Settings” on the permission banner doesn't work anymore. (And the cursor
+  should be changed while hovering it.)
+- When my layout is QWERTY, the left four letters are `ASST` instead of `ASDF`.
+  The `D` key (in QWERTY) and the `F` key (in QWERTY) are completely broken:
+  - `D` is not disabled.
+  - `T` doesn't have the coresponding BOMB icon in below.
+  - Pressing `T` dosen't light up the square.
+```

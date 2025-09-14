@@ -401,6 +401,55 @@ impl KeyboardLayout {
     }
 }
 
+fn get_key_label(state: &SharedState, keycode: u16) -> &str {
+    match keycode {
+        0 => {
+            let bytes = &state.key_states.label_0;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or("A")
+        },
+        1 => {
+            let bytes = &state.key_states.label_1;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or("S")
+        },
+        2 => {
+            let bytes = &state.key_states.label_2;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or("D")
+        },
+        3 => {
+            let bytes = &state.key_states.label_3;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or("F")
+        },
+        38 => {
+            let bytes = &state.key_states.label_38;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or("J")
+        },
+        40 => {
+            let bytes = &state.key_states.label_40;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or("K")
+        },
+        37 => {
+            let bytes = &state.key_states.label_37;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or("L")
+        },
+        41 => {
+            let bytes = &state.key_states.label_41;
+            std::str::from_utf8(&bytes[..bytes.iter().position(|&b| b == 0).unwrap_or(bytes.len())])
+                .unwrap_or(";")
+        },
+        53 => "ESC",
+        51 => "BACKSPACE", 
+        49 => "SPACE",
+        _ => "?",
+    }
+}
+
 fn draw_keyboard_layout(
     d: &mut RaylibDrawHandle,
     state: &SharedState,
@@ -412,12 +461,12 @@ fn draw_keyboard_layout(
     let layout = KeyboardLayout::new();
     let start_y = layout.padding_y + vertical_offset;
 
-    // Left side keys: ESC to the left of A, then A, R, S, T in a row
+    // Left side keys: ESC to the left of A, then A, S, D, F in a row (using dynamic labels)
     // ESC should be at the left of A according to specification
     let left_keys = [
         ("ESC", 53, layout.padding_x, start_y, layout.key_size, layout.key_size), // ESC at the left
         (
-            "A",
+            get_key_label(state, 0), // First key (A in QWERTY)
             0,
             layout.padding_x + layout.key_size + layout.key_spacing,
             start_y,
@@ -425,7 +474,7 @@ fn draw_keyboard_layout(
             layout.key_size,
         ),
         (
-            "R",
+            get_key_label(state, 1), // Second key (S in QWERTY)
             1,
             layout.padding_x + (layout.key_size + layout.key_spacing) * 2.0,
             start_y,
@@ -433,16 +482,16 @@ fn draw_keyboard_layout(
             layout.key_size,
         ),
         (
-            "S",
-            4,
+            get_key_label(state, 2), // Third key (D in QWERTY)
+            2,
             layout.padding_x + (layout.key_size + layout.key_spacing) * 3.0,
             start_y,
             layout.key_size,
             layout.key_size,
         ),
         (
-            "T",
-            17,
+            get_key_label(state, 3), // Fourth key (F in QWERTY)
+            3,
             layout.padding_x + (layout.key_size + layout.key_spacing) * 4.0,
             start_y,
             layout.key_size,
@@ -460,12 +509,12 @@ fn draw_keyboard_layout(
         layout.key_size,
     );
 
-    // Right side keys: N, E, I, O
+    // Right side keys: J, K, L, ; (using dynamic labels)
     let right_start_x = layout.right_start_x(); // Calculate from layout
     let right_keys = [
-        ("N", 38, right_start_x, start_y, layout.key_size, layout.key_size),
+        (get_key_label(state, 38), 38, right_start_x, start_y, layout.key_size, layout.key_size), // J in QWERTY
         (
-            "E",
+            get_key_label(state, 40), // K in QWERTY
             40,
             right_start_x + layout.key_size + layout.key_spacing,
             start_y,
@@ -473,7 +522,7 @@ fn draw_keyboard_layout(
             layout.key_size,
         ),
         (
-            "I",
+            get_key_label(state, 37), // L in QWERTY
             37,
             right_start_x + (layout.key_size + layout.key_spacing) * 2.0,
             start_y,
@@ -481,7 +530,7 @@ fn draw_keyboard_layout(
             layout.key_size,
         ),
         (
-            "O",
+            get_key_label(state, 41), // ; in QWERTY
             41,
             right_start_x + (layout.key_size + layout.key_spacing) * 3.0,
             start_y,
@@ -799,6 +848,32 @@ fn run_ui_process(shared_state: *mut SharedState) {
         // Get window dimensions before drawing
         let window_width = rl.get_screen_width() as f32;
         let window_height = rl.get_screen_height();
+
+        // Calculate button area if permission banner is shown (for cursor change)
+        let is_button_hovered = if !has_permission {
+            let banner_width = 570.0;
+            let banner_x = (window_width - banner_width) / 2.0;
+            let button_width = 100.0;
+            let button_height = 20.0;
+            let button_x = banner_x + banner_width - button_width - 15.0;
+            let banner_height = 50.0;
+            let banner_y = 30.0;
+            let button_y = banner_y + (banner_height - button_height) / 2.0;
+            
+            mouse_pos.x >= button_x
+                && mouse_pos.x <= button_x + button_width
+                && mouse_pos.y >= button_y
+                && mouse_pos.y <= button_y + button_height
+        } else {
+            false
+        };
+
+        // Set cursor based on hover state
+        if is_button_hovered {
+            rl.set_mouse_cursor(MouseCursor::MOUSE_CURSOR_POINTING_HAND);
+        } else {
+            rl.set_mouse_cursor(MouseCursor::MOUSE_CURSOR_DEFAULT);
+        }
 
         let mut d = rl.begin_drawing(&thread);
 
