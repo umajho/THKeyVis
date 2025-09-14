@@ -176,7 +176,68 @@ func setupWindowProperties(window: NSWindow) {
     // Enable dragging anywhere on the window
     window.isMovableByWindowBackground = true
     
-    print("Window configured: Always-on-top, draggable, custom title set")
+    // Setup resizable window with aspect ratio preservation and content scaling
+    setupResizableWindowWithScaling(window: window)
+    
+    print("Window configured: Always-on-top, draggable, resizable with scaling, custom title set")
+}
+
+// Window delegate to handle aspect ratio preservation and content scaling
+class THKeyVisWindowDelegate: NSObject, NSWindowDelegate {
+    private let originalSize: NSSize
+    private let aspectRatio: CGFloat
+    private weak var contentView: NSView?
+    
+    init(originalSize: NSSize, contentView: NSView?) {
+        self.originalSize = originalSize
+        self.aspectRatio = originalSize.width / originalSize.height
+        self.contentView = contentView
+        super.init()
+    }
+    
+    func windowWillResize(_ sender: NSWindow, to frameSize: NSSize) -> NSSize {
+        // Calculate new size while preserving aspect ratio
+        let newWidth = frameSize.width
+        let newHeight = newWidth / aspectRatio
+        
+        // If the calculated height is too large, constrain by height instead
+        if newHeight > frameSize.height {
+            let constrainedHeight = frameSize.height
+            let constrainedWidth = constrainedHeight * aspectRatio
+            return NSSize(width: constrainedWidth, height: constrainedHeight)
+        }
+        
+        return NSSize(width: newWidth, height: newHeight)
+    }
+    
+    func windowDidResize(_ notification: Notification) {
+        guard let _ = notification.object as? NSWindow,
+              let contentView = self.contentView else { return }
+        
+        // Scale content by setting bounds to original size while frame changes
+        // This causes NSView to automatically scale all drawing operations
+        contentView.setBoundsSize(originalSize)
+    }
+}
+
+func setupResizableWindowWithScaling(window: NSWindow) {
+    guard let contentView = window.contentView else { return }
+    
+    // Store original size for scaling reference
+    let originalSize = window.frame.size
+    
+    // Enable resizing
+    window.styleMask.insert(.resizable)
+    
+    // Enable frame change notifications for the content view
+    contentView.postsFrameChangedNotifications = true
+    
+    // Setup delegate for aspect ratio and scaling
+    let delegate = THKeyVisWindowDelegate(originalSize: originalSize, contentView: contentView)
+    window.delegate = delegate
+    
+    // Store delegate reference to prevent deallocation
+    objc_setAssociatedObject(window, "THKeyVisDelegate", delegate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
 }
 
 

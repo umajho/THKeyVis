@@ -884,6 +884,7 @@ fn run_ui_process(shared_state: *mut SharedState) {
         .size(layout.window_width, layout.window_height)
         .title("THKeyVis")
         .transparent()
+        .resizable()
         .build();
     rl.set_target_fps(120);
 

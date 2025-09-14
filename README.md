@@ -492,3 +492,18 @@ the fps indicator disappered.
 Please make the FPS indicator and Layout indicator the same line. Don't let the
 FPS indicator's width affect the Layout indicator's position.
 ```
+
+###### Part 13
+
+```md
+I don't know if this is achievable, but can you make the window resizable while
+keeping the aspect ratio? The content in the window will be scaled, just like
+how does one scale images.
+```
+
+```md
+I temperorily stashed all the changes you have made. Do you think this can be
+done without the rust side being involved?
+
+Do you think this is helpful: https://stackoverflow.com/questions/70085118
+```
