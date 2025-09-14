@@ -22,5 +22,6 @@ extern void get_layout_name(char *buffer, size_t buffer_size);
 // Function that Swift implements for Rust to call
 void swift_open_system_preferences(void);
 void swift_start_permission_monitoring(void); // Swift permission monitoring function
+void swift_setup_window_management(void);     // Swift window management function
 
 #endif /* rust_bridge_h */

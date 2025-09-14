@@ -2,6 +2,7 @@ import Foundation
 import ApplicationServices
 import IOKit.hid
 import Carbon
+import Cocoa
 
 // Global variables for keyboard layout monitoring
 var currentInputSource: TISInputSource?
@@ -126,6 +127,93 @@ func setupKeyboardLayoutMonitoring() {
             }
         }
     }
+}
+
+// MARK: - Window Management Functions
+
+// Function to find the raylib window and configure it
+func findAndConfigureRaylibWindow() {
+    // Wait a bit for raylib to create the window
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+        // Find all windows and look for our raylib window
+        for window in NSApplication.shared.windows {
+            if window.title == "THKeyVis" || window.contentView != nil {
+                setupWindowProperties(window: window)
+                break
+            }
+        }
+        
+        // If not found, try again after a longer delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            for window in NSApplication.shared.windows {
+                if window.contentView != nil {
+                    setupWindowProperties(window: window)
+                    break
+                }
+            }
+        }
+    }
+}
+
+// Configure window properties for always-on-top, dragging, and proper title
+func setupWindowProperties(window: NSWindow) {
+    // Set custom title
+    window.title = "THKeyVis (https://github.com/umajho/THKeyVis)"
+    
+    // Make window always stay on top
+    window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
+    
+    // Configure window behavior
+    window.hidesOnDeactivate = false
+    window.canHide = false
+    window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+    
+    // Enable dragging anywhere on the window
+    window.isMovableByWindowBackground = true
+    
+    // For raylib windows, we need to add a custom view to handle dragging
+    if let contentView = window.contentView {
+        setupDraggableView(for: window, contentView: contentView)
+    }
+    
+    print("Window configured: Always-on-top, draggable, custom title set")
+}
+
+// Custom view class to handle window dragging
+class DraggableView: NSView {
+    weak var targetWindow: NSWindow?
+    
+    init(window: NSWindow) {
+        self.targetWindow = window
+        super.init(frame: .zero)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func mouseDown(with event: NSEvent) {
+        targetWindow?.performDrag(with: event)
+    }
+}
+
+func setupDraggableView(for window: NSWindow, contentView: NSView) {
+    // Create an overlay view that captures mouse events for dragging
+    let draggableOverlay = DraggableView(window: window)
+    draggableOverlay.frame = contentView.bounds
+    draggableOverlay.autoresizingMask = [.width, .height]
+    draggableOverlay.alphaValue = 0.0 // Make it invisible
+    draggableOverlay.wantsLayer = true
+    
+    contentView.addSubview(draggableOverlay)
+    
+    print("Added draggable overlay to window content")
+}
+
+// Function that can be called from Rust to setup window management
+@_cdecl("swift_setup_window_management") 
+func swiftSetupWindowManagement() {
+    findAndConfigureRaylibWindow()
 }
 
 // Swift implementation of system monitoring (permissions + keyboard layout) that Rust will call

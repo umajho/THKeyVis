@@ -6,6 +6,11 @@ use std::process::Command;
 use std::ptr;
 use std::slice;
 
+// External Swift functions
+unsafe extern "C" {
+    fn swift_setup_window_management();
+}
+
 // Shared memory structure for cross-process communication
 #[repr(C)]
 pub struct SharedState {
@@ -693,6 +698,11 @@ fn run_ui_process(shared_state: *mut SharedState) {
         .title("THKeyVis")
         .build();
     rl.set_target_fps(120);
+
+    // Setup window management (always-on-top, dragging, custom title) via Swift
+    unsafe {
+        swift_setup_window_management();
+    }
 
     // Load game icons
     let mut icons = GameIcons::new();

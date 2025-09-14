@@ -280,7 +280,7 @@ please focus on expected behaviors, not implementation details.
 
 #### Episode 5
 
-##### Prompt
+##### Prompts
 
 ###### Part 1
 
@@ -379,4 +379,21 @@ the key code numbers?
 
 ```md
 You forgot to change the corresponding code in main.swift.
+```
+
+#### Episode 6
+
+##### Prompts
+
+###### Part 1
+
+```md
+Now. Read macOS/SPECIFICATION.md, and implement window-related features.
+```
+
+```md
+- The title updated as expected.
+- The window is always at the top now.
+- Only the title bar can be dragged, the content still can't be dragged to move
+  the window.
 ```
