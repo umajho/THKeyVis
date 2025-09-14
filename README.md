@@ -303,3 +303,17 @@ It can correctly the keys I'm pressing no matter the keyboard layout, but:
 - When I switched the keyboard layout, it didn't change the key names
   accordingly. (It seems they are hardcoded for colemak for now.)
 ```
+
+###### Part 2
+
+```md
+You changed the icons (retry/bomb/etc.) to texts without my permission, just
+because you used unicode and raylib can't handle them. Now, I found png images
+for those icons, and put them in the `icons` folder, you should revert the texts
+back to icons.
+```
+
+```md
+- Shoot should be `EosIconsTroubleshooting`.
+- Prefer `include_bytes`.
+```

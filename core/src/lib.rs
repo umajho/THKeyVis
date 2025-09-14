@@ -371,7 +371,12 @@ fn check_accessibility_permission() -> bool {
     }
 }
 
-fn draw_keyboard_layout(d: &mut RaylibDrawHandle, state: &SharedState, has_permission: bool) {
+fn draw_keyboard_layout(
+    d: &mut RaylibDrawHandle,
+    state: &SharedState,
+    has_permission: bool,
+    icons: &GameIcons,
+) {
     // Layout constants - matching SPECIFICATION.md layout
     const KEY_SIZE: f32 = 60.0;
     const KEY_SPACING: f32 = 10.0;
@@ -481,6 +486,7 @@ fn draw_keyboard_layout(d: &mut RaylibDrawHandle, state: &SharedState, has_permi
             height,
             state,
             has_permission,
+            icons,
         );
     }
 
@@ -495,6 +501,7 @@ fn draw_keyboard_layout(d: &mut RaylibDrawHandle, state: &SharedState, has_permi
             height,
             state,
             has_permission,
+            icons,
         );
     }
 
@@ -509,6 +516,7 @@ fn draw_keyboard_layout(d: &mut RaylibDrawHandle, state: &SharedState, has_permi
         backspace.5,
         state,
         has_permission,
+        icons,
     );
     draw_key(
         d,
@@ -520,6 +528,7 @@ fn draw_keyboard_layout(d: &mut RaylibDrawHandle, state: &SharedState, has_permi
         space.5,
         state,
         has_permission,
+        icons,
     );
 
     // Draw layout name at top left
@@ -545,6 +554,7 @@ fn draw_key(
     height: f32,
     state: &SharedState,
     has_permission: bool,
+    icons: &GameIcons,
 ) {
     let key_rect = Rectangle::new(x, y, width, height);
     let is_pressed = state.key_states.get_key_state(keycode);
@@ -602,12 +612,26 @@ fn draw_key(
     }
 
     // Draw functional icon (bottom) for gaming context
-    let icon = get_gaming_icon(keycode);
-    if !icon.is_empty() {
-        let icon_y = (y + height - 12.0) as i32;
-        let icon_width = d.measure_text(&icon, 10);
-        let icon_x = (x + width / 2.0 - icon_width as f32 / 2.0) as i32;
-        d.draw_text(&icon, icon_x, icon_y, 10, Color::DARKGRAY);
+    if let Some(icon_texture) = icons.get_icon_texture(keycode) {
+        // Icon size (small, bottom of key)
+        let icon_size = 16.0;
+        let icon_x = x + width / 2.0 - icon_size / 2.0;
+        let icon_y = y + height - icon_size - 2.0;
+
+        // Draw the icon with appropriate tint based on key state
+        let icon_tint = if has_permission {
+            Color::new(100, 100, 100, 200) // Semi-transparent dark gray
+        } else {
+            Color::new(150, 50, 50, 150) // Semi-transparent dark red when no permission
+        };
+
+        d.draw_texture_ex(
+            icon_texture,
+            Vector2::new(icon_x, icon_y),
+            0.0,                                   // rotation
+            icon_size / icon_texture.width as f32, // scale to fit icon_size
+            icon_tint,
+        );
     }
 }
 
@@ -632,21 +656,6 @@ fn get_key_main_label(default_label: &str, keycode: u32, state: &SharedState) ->
     }
 }
 
-fn get_gaming_icon(keycode: u32) -> &'static str {
-    // Gaming context icons based on QWERTY positions (using simple ASCII)
-    match keycode {
-        2 => "Retry",  // S position -> Retry
-        3 => "Bomb",   // F position -> Bomb
-        38 => "<-",    // J position -> Left Arrow
-        40 => "^",     // K position -> Up Arrow
-        37 => "v",     // L position -> Down Arrow
-        41 => "->",    // ; position -> Right Arrow
-        51 => "Shot",  // Backspace -> Shot
-        49 => "Focus", // Space -> Slow-Movement Mode (Focus Mode)
-        _ => "",
-    }
-}
-
 fn get_qwerty_hint(keycode: u32) -> &'static str {
     // Returns the QWERTY character for the physical key position
     match keycode {
@@ -665,6 +674,10 @@ fn get_qwerty_hint(keycode: u32) -> &'static str {
 fn run_ui_process(shared_state: *mut SharedState) {
     let (mut rl, thread) = raylib::init().size(800, 300).title("THKeyVis").build();
     rl.set_target_fps(120);
+
+    // Load game icons
+    let mut icons = GameIcons::new();
+    icons.load_icons(&mut rl, &thread);
 
     while !rl.window_should_close() {
         // Get input state before drawing
@@ -731,7 +744,104 @@ fn run_ui_process(shared_state: *mut SharedState) {
         }
 
         // Draw keyboard layout according to SPECIFICATION.md
-        draw_keyboard_layout(&mut d, state, has_permission);
+        draw_keyboard_layout(&mut d, state, has_permission, &icons);
+    }
+}
+
+// Embedded icon data using include_bytes!
+const ARROW_LEFT_PNG: &[u8] = include_bytes!("../../icons/MaterialSymbolsArrowBack.png");
+const ARROW_RIGHT_PNG: &[u8] = include_bytes!("../../icons/MaterialSymbolsArrowForward.png");
+const ARROW_UP_PNG: &[u8] = include_bytes!("../../icons/MaterialSymbolsArrowUpward.png");
+const ARROW_DOWN_PNG: &[u8] = include_bytes!("../../icons/MaterialSymbolsArrowDownward.png");
+const BOMB_PNG: &[u8] = include_bytes!("../../icons/MaterialSymbolsBomb.png");
+const FOCUS_PNG: &[u8] = include_bytes!("../../icons/MaterialSymbolsFilterCenterFocus.png");
+const REFRESH_PNG: &[u8] = include_bytes!("../../icons/MaterialSymbolsRefresh.png");
+const SHOOT_PNG: &[u8] = include_bytes!("../../icons/EosIconsTroubleshooting.png");
+
+// Icon storage for gaming icons
+struct GameIcons {
+    arrow_left: Option<Texture2D>,
+    arrow_right: Option<Texture2D>,
+    arrow_up: Option<Texture2D>,
+    arrow_down: Option<Texture2D>,
+    bomb: Option<Texture2D>,
+    focus: Option<Texture2D>,
+    refresh: Option<Texture2D>,
+    shoot: Option<Texture2D>,
+}
+
+impl GameIcons {
+    fn new() -> Self {
+        Self {
+            arrow_left: None,
+            arrow_right: None,
+            arrow_up: None,
+            arrow_down: None,
+            bomb: None,
+            focus: None,
+            refresh: None,
+            shoot: None,
+        }
+    }
+
+    fn load_icons(&mut self, rl: &mut RaylibHandle, thread: &RaylibThread) {
+        println!("Loading embedded icons...");
+
+        // Load textures from embedded byte data
+        if let Ok(image) = Image::load_image_from_mem(".png", ARROW_LEFT_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.arrow_left = Some(texture);
+            }
+        }
+        if let Ok(image) = Image::load_image_from_mem(".png", ARROW_RIGHT_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.arrow_right = Some(texture);
+            }
+        }
+        if let Ok(image) = Image::load_image_from_mem(".png", ARROW_UP_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.arrow_up = Some(texture);
+            }
+        }
+        if let Ok(image) = Image::load_image_from_mem(".png", ARROW_DOWN_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.arrow_down = Some(texture);
+            }
+        }
+        if let Ok(image) = Image::load_image_from_mem(".png", BOMB_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.bomb = Some(texture);
+            }
+        }
+        if let Ok(image) = Image::load_image_from_mem(".png", FOCUS_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.focus = Some(texture);
+            }
+        }
+        if let Ok(image) = Image::load_image_from_mem(".png", REFRESH_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.refresh = Some(texture);
+            }
+        }
+        if let Ok(image) = Image::load_image_from_mem(".png", SHOOT_PNG) {
+            if let Ok(texture) = rl.load_texture_from_image(thread, &image) {
+                self.shoot = Some(texture);
+            }
+        }
+    }
+
+    fn get_icon_texture(&self, keycode: u32) -> Option<&Texture2D> {
+        match keycode {
+            2 => self.refresh.as_ref(),      // S position -> Retry (Refresh icon)
+            3 => self.bomb.as_ref(),         // F position -> Bomb
+            38 => self.arrow_left.as_ref(),  // J position -> Left Arrow
+            40 => self.arrow_up.as_ref(),    // K position -> Up Arrow
+            37 => self.arrow_down.as_ref(),  // L position -> Down Arrow
+            41 => self.arrow_right.as_ref(), // ; position -> Right Arrow
+            51 => self.shoot.as_ref(),       // Backspace -> Shot (EosIconsTroubleshooting)
+            49 => self.focus.as_ref(),       // Space -> Focus Mode
+            _ => None,
+        }
     }
 }
 

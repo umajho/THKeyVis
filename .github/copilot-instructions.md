@@ -3,6 +3,8 @@
   - in `macOS/justfile`, we have `{build,run}-{debug,release}`, note that you
     should `just build-*` before `just run-*`.
   - don't forget `cd` to the right directory.
-- `./core` is the main project.
+- `./core` is the main project (the new version).
 - `./macOS` is the entry point for macOS. It also contains the legacy version of
-  this project. 
+  this project.
+- You should check `macOS/SPECIFICATION.md` before porting the legacy version to
+  the new version.
