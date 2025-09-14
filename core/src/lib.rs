@@ -440,7 +440,7 @@ fn draw_keyboard_layout(
     );
 
     // Right side keys: N, E, I, O
-    let right_start_x = START_X + (KEY_SIZE + KEY_SPACING) * 6.0; // Leave gap after left side
+    let right_start_x = START_X + (KEY_SIZE + KEY_SPACING) * 5.5; // Moderate gap after left side
     let right_keys = [
         ("N", 38, right_start_x, start_y, KEY_SIZE, KEY_SIZE),
         (
@@ -691,7 +691,7 @@ fn run_ui_process(shared_state: *mut SharedState) {
     // Constants for layout
     const BANNER_HEIGHT: i32 = 90; // Banner + margin space
     const BASE_HEIGHT: i32 = 180; // Reduced height for symmetric vertical padding
-    const WINDOW_WIDTH: i32 = 770; // Calculated: keyboard width (690) + symmetric padding (40×2)
+    const WINDOW_WIDTH: i32 = 725; // Calculated: keyboard width (645) + symmetric padding (40×2)
 
     let (mut rl, thread) = raylib::init()
         .size(WINDOW_WIDTH, BASE_HEIGHT + BANNER_HEIGHT)
@@ -741,9 +741,15 @@ fn run_ui_process(shared_state: *mut SharedState) {
 
         // Clear with transparent background
         d.clear_background(Color::new(0, 0, 0, 0));
-        
+
         // Draw dark semi-transparent background (60% opacity)
-        d.draw_rectangle(0, 0, window_width as i32, window_height, Color::new(20, 20, 20, 153));
+        d.draw_rectangle(
+            0,
+            0,
+            window_width as i32,
+            window_height,
+            Color::new(20, 20, 20, 153),
+        );
 
         if !has_permission {
             // Permission warning banner - centered horizontally

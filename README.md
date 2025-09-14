@@ -407,3 +407,15 @@ Make the background dark, and set its opacity to 60%.
 ```md
 The window is not transparent, unfortunately.
 ```
+
+###### Part 3
+
+```md
+Please make the gap between the left and right part smaller, maybe half it? Also
+don't forgot to adjust the window's width.
+```
+
+```md
+now the gap is as small as the margin between keys on the same side, which is
+not what I want. I still want the gap to be larger.
+```
