@@ -560,6 +560,9 @@ fn draw_key(
     let key_rect = Rectangle::new(x, y, width, height);
     let is_pressed = state.key_states.get_key_state(keycode);
 
+    // Check if this key is unused (A or D keys don't have functions)
+    let is_unused_key = keycode == 0 || keycode == 2;
+
     // Determine key colors based on state
     let (bg_color, border_color, text_color) = if !has_permission {
         // Red when permissions missing
@@ -567,6 +570,13 @@ fn draw_key(
             Color::new(255, 200, 200, 255),
             Color::new(200, 100, 100, 255),
             Color::DARKRED,
+        )
+    } else if is_unused_key {
+        // Grey out unused keys (A and D)
+        (
+            Color::new(200, 200, 200, 255),
+            Color::new(150, 150, 150, 255),
+            Color::new(120, 120, 120, 255),
         )
     } else if is_pressed {
         // Pressed state - highlighted
@@ -884,7 +894,7 @@ impl GameIcons {
 
     fn get_icon_texture(&self, keycode: u32) -> Option<&Texture2D> {
         match keycode {
-            2 => self.refresh.as_ref(),      // S position -> Retry (Refresh icon)
+            1 => self.refresh.as_ref(),      // S position -> Retry (Refresh icon)
             3 => self.bomb.as_ref(),         // F position -> Bomb
             38 => self.arrow_left.as_ref(),  // J position -> Left Arrow
             40 => self.arrow_up.as_ref(),    // K position -> Up Arrow

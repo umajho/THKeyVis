@@ -358,3 +358,13 @@ fork-related issue. Maybe you should reuse the `swiftStartPermissionMonitoring`
 function. (Don't forget to rename `swiftStartPermissionMonitoring` to a more
 appropriate name if you choose this approach.)
 ```
+
+###### Part 5
+
+```md
+I just found that the retry button should be attached to the S key (in QWERTY)
+instead of the D key (in QWERTY). Please fix it.
+
+Also, the A key and the D key should always be greyed out, since they are not
+used.
+```
