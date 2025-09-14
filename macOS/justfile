@@ -1,32 +1,51 @@
-# Build Rust library first
-build-rust:
+set fallback
+
+# Build Rust library for debug
+build-debug-rust:
     #!/usr/bin/env bash
-    ./build_rust.sh
+    ./build_rust.sh debug
     # Also copy to where Xcode expects it for Debug builds
     mkdir -p build/Debug
     cp lib/libcore.a build/Debug/
-    # Copy to DerivedData directory if it exists
-    DERIVED_DATA_DIR=$(xcodebuild -project THKeyVis.xcodeproj -showBuildSettings 2>/dev/null | grep "BUILT_PRODUCTS_DIR.*Debug" | head -1 | sed 's/.*= //')
+    # Copy to DerivedData directory using Xcode's build settings
+    DERIVED_DATA_DIR=$(xcodebuild -project THKeyVis.xcodeproj -scheme THKeyVis -configuration Debug -showBuildSettings | grep "BUILT_PRODUCTS_DIR" | head -1 | sed 's/.*= //')
     if [ -n "$DERIVED_DATA_DIR" ]; then
-        echo "Copying to Xcode derived data directory: $DERIVED_DATA_DIR"
+        echo "Copying to Xcode build directory: $DERIVED_DATA_DIR"
         mkdir -p "$DERIVED_DATA_DIR"
         cp lib/libcore.a "$DERIVED_DATA_DIR/"
+        # Force touch the library to ensure Xcode sees it as changed
+        touch "$DERIVED_DATA_DIR/libcore.a"
+        echo "Library updated at: $DERIVED_DATA_DIR/libcore.a"
+    else
+        echo "Warning: Could not determine Xcode build directory"
     fi
 
 # Build debug configuration (with Rust)
-build-debug: build-rust
+build-debug: build-debug-rust
     xcodebuild -project THKeyVis.xcodeproj -scheme THKeyVis -configuration Debug build
 
-# Build Rust for release
-build-rust-release:
+# Build Rust library for release
+build-release-rust:
     #!/usr/bin/env bash
-    ./build_rust.sh
+    ./build_rust.sh release
     # Copy to where Xcode expects it for Release builds  
     mkdir -p build/Release
     cp lib/libcore.a build/Release/
+    # Copy to DerivedData directory using Xcode's build settings
+    DERIVED_DATA_DIR=$(xcodebuild -project THKeyVis.xcodeproj -scheme THKeyVis -configuration Release -showBuildSettings | grep "BUILT_PRODUCTS_DIR" | head -1 | sed 's/.*= //')
+    if [ -n "$DERIVED_DATA_DIR" ]; then
+        echo "Copying to Xcode build directory: $DERIVED_DATA_DIR"
+        mkdir -p "$DERIVED_DATA_DIR"
+        cp lib/libcore.a "$DERIVED_DATA_DIR/"
+        # Force touch the library to ensure Xcode sees it as changed
+        touch "$DERIVED_DATA_DIR/libcore.a"
+        echo "Library updated at: $DERIVED_DATA_DIR/libcore.a"
+    else
+        echo "Warning: Could not determine Xcode build directory"
+    fi
 
 # Build release configuration (with Rust)
-build-release: build-rust-release
+build-release: build-release-rust
     xcodebuild -project THKeyVis.xcodeproj -scheme THKeyVis -configuration Release build
 
 # Run debug build

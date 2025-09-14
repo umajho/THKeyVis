@@ -1,7 +1,7 @@
 use raylib::prelude::*;
 
 pub fn init() {
-    let (mut rl, thread) = raylib::init().size(640, 480).title("Hello, World").build();
+    let (mut rl, thread) = raylib::init().size(640, 480).title("222").build();
 
     rl.set_target_fps(120);
 
@@ -9,7 +9,7 @@ pub fn init() {
         let mut d = rl.begin_drawing(&thread);
 
         d.clear_background(Color::WHITE);
-        d.draw_text("Hello, world!", 12, 12, 20, Color::BLACK);
+        d.draw_text("222!", 12, 12, 20, Color::BLACK);
     }
 }
 

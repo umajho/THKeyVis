@@ -28,6 +28,8 @@ is not very common:
 
 ##### Prompt
 
+###### Part 1
+
 ```md
 Hello. Can you make the swift project in `./macOS` to hand over the main thread
 to the rust's `init` function in `./core/src/lib.rs`?
@@ -47,3 +49,34 @@ Don't forget to make xcodebuild to run the build scripts during building.
 ```
 
 …
+
+###### Part 2
+
+```md
+After I changed core/src/lib.rs, neither:
+
+- start the active schema in Xcode, nor
+- `just build-debug` then `just run-debug`
+
+reflects the changes.
+```
+
+```md
+You are wrong. Even if I removed the target folder, and saw that cargo rebuilt
+everything, this still happens.
+```
+
+```md
+please don't hard code paths.
+```
+
+```md
+using find doesn't seem robust to me.
+```
+
+```md
+please rename the `build-rust` command in justfile to `build-debug-rust`, and
+also apply the same fix to `build-rust-release` (which should be renamed to
+`build-release-rust`). also, please fix `build_rust.sh`, it currently only build
+the release version.
+```
