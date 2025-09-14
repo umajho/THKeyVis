@@ -262,3 +262,18 @@ https://stackoverflow.com/questions/79010369/how-to-check-the-status-of-the-inpu
 
 Also, you need to update the banner.
 ```
+
+#### Episode 4
+
+##### Prompts
+
+```md
+create a retrospective sepcification for the legacy code from the agent histroy
+in this README (./macos/README.md). Ignore the remap-mode part. It will be used
+for porting the legacy swift code to rust+swift. (note that only `main.swift` is
+not legacy, other swift files are legacy.)
+```
+
+```md
+please focus on expected behaviors, not implementation details.
+```
