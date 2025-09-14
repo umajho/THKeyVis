@@ -110,3 +110,10 @@ Please make the implementation exactly like the original one
 user to the settings page. Secondly, don't add other texts that is not in the
 original implementation.
 ```
+
+###### Part 3
+
+```md
+Since opening the settings is just opening a URL, can't we do it on the rust
+side directly?
+```

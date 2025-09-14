@@ -1,4 +1,5 @@
 use raylib::prelude::*;
+use std::process::Command;
 
 // Shared memory structure for permission state
 #[repr(C)]
@@ -70,9 +71,10 @@ pub fn init() {
 
             // Handle button click
             if is_button_hovered && mouse_clicked {
-                unsafe {
-                    swift_open_system_preferences();
-                }
+                // Open System Preferences directly from Rust
+                let _ = Command::new("open")
+                    .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+                    .spawn();
             }
         }
     }
@@ -90,11 +92,6 @@ pub extern "C" fn set_accessibility_permission(has_permission: bool) {
 #[unsafe(no_mangle)]
 pub extern "C" fn get_accessibility_permission() -> bool {
     unsafe { PERMISSION_STATE.has_accessibility_permission }
-}
-
-// C FFI function that will be called by Swift to open System Preferences
-unsafe extern "C" {
-    fn swift_open_system_preferences();
 }
 
 // Export the init function with C ABI for Swift interop

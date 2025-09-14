@@ -1,6 +1,5 @@
 import Foundation
 import ApplicationServices
-import AppKit
 
 // Function to monitor accessibility permission in a background thread
 func startPermissionMonitoring() {
@@ -15,15 +14,7 @@ func startPermissionMonitoring() {
     }
 }
 
-// Swift function that Rust calls to open System Preferences
-@_cdecl("swift_open_system_preferences")
-func swiftOpenSystemPreferences() {
-    DispatchQueue.main.async {
-        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
-            NSWorkspace.shared.open(url)
-        }
-    }
-}
+
 
 // Start permission monitoring thread before handing control to Rust
 startPermissionMonitoring()
