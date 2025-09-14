@@ -96,3 +96,17 @@ and use shared memory to let the rust side know the state. In rust, at every
 frame, it checks the value in the shared memory, and if the permission is not
 granted, it warns like what is done in the old code.
 ```
+
+###### Part 2
+
+```md
+You should check `macOS/THKeyVis/KeyboardView.swift` line 99 for the ui
+implementation.
+```
+
+```md
+Please make the implementation exactly like the original one
+(`KeyboardView.swift:99`). For example, you should use a button the guide the
+user to the settings page. Secondly, don't add other texts that is not in the
+original implementation.
+```
