@@ -19,6 +19,9 @@ extern void set_layout_name(const char *name);
 extern void set_key_label(const char *position, const char *label);
 extern void get_layout_name(char *buffer, size_t buffer_size);
 
+// Application lifecycle management
+extern void request_application_close(void);
+
 // Function that Swift implements for Rust to call
 void swift_open_system_preferences(void);
 void swift_start_permission_monitoring(void); // Swift permission monitoring function

@@ -507,3 +507,60 @@ done without the rust side being involved?
 
 Do you think this is helpful: https://stackoverflow.com/questions/70085118
 ```
+
+###### Part 14
+
+````md
+Although not a big deal:
+
+The app will always crash after quit:
+
+```
+Crashed Thread:        0  Dispatch queue: com.apple.main-thread
+
+Exception Type:        EXC_BAD_ACCESS (SIGSEGV)
+Exception Codes:       KERN_INVALID_ADDRESS at 0x0000000000000010
+Exception Codes:       0x0000000000000001, 0x0000000000000010
+
+Termination Reason:    Namespace SIGNAL, Code 11 Segmentation fault: 11
+Terminating Process:   exc handler [33583]
+
+VM Region Info: 0x10 is not in any region.  Bytes before following region: 4338417648
+      REGION TYPE                    START - END         [ VSIZE] PRT/MAX SHRMOD  REGION DETAIL
+      UNUSED SPACE AT START
+--->  
+      __TEXT                      102970000-102974000    [   16K] r-x/r-x SM=COW  /Users/USER/Library/Developer/Xcode/DerivedData/THKeyVis-cxaanmdwaedslrfrxqfcyfnztgfx/Build/Products/Debug/THKeyVis.app/Contents/MacOS/THKeyVis
+
+Application Specific Information:
+crashed on child side of fork pre-exec
+
+
+Thread 0 Crashed::  Dispatch queue: com.apple.main-thread
+0   libobjc.A.dylib               	       0x186a65820 objc_msgSend + 32
+1   THKeyVis.debug.dylib          	       0x103780600 cursorInContentArea + 28
+2   THKeyVis.debug.dylib          	       0x1037805bc _glfwSetCursorCocoa + 36
+3   THKeyVis.debug.dylib          	       0x10376ac38 glfwSetCursor + 164
+4   THKeyVis.debug.dylib          	       0x103657b88 SetMouseCursor + 60
+5   THKeyVis.debug.dylib          	       0x1034d1b90 raylib::core::window::_$LT$impl$u20$raylib..core..RaylibHandle$GT$::set_mouse_cursor::hc934d9d5d3f9ad7f + 32
+6   THKeyVis.debug.dylib          	       0x1034d5558 core::run_ui_process::he1a55536bc7480e6 + 832
+7   THKeyVis.debug.dylib          	       0x1034d51e4 rust_main_with_callback + 212
+8   THKeyVis.debug.dylib          	       0x1034a8148 __debug_main_executable_dylib_entry_point + 132 (main.swift:286)
+9   dyld                          	       0x186ab6b98 start + 6076
+```
+````
+
+```md
+Maybe this is caused by the swift side's `NSWindowDelegate`?
+```
+
+```md
+This didn't solve the issue. Can we prevent the window from being closed by the
+swift side, and let raylib to handle that?
+```
+
+```md
+Hmm. Now clicking the red button doesn't close the window. Can you make it that
+when `windowShouldClose` is called, swift will notify the raylib process that it
+should end (swift calls rust, and rust parent process sets SharedState, rust
+raylib process checks that state along with `window_should_close`)?
+```

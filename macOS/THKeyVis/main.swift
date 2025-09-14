@@ -218,6 +218,14 @@ class THKeyVisWindowDelegate: NSObject, NSWindowDelegate {
         // This causes NSView to automatically scale all drawing operations
         contentView.setBoundsSize(originalSize)
     }
+    
+    // Handle window close request by signaling Rust process
+    func windowShouldClose(_ sender: NSWindow) -> Bool {
+        // Signal the Rust process to close gracefully
+        request_application_close()
+        // Don't let Swift close the window immediately - let raylib handle cleanup
+        return false
+    }
 }
 
 func setupResizableWindowWithScaling(window: NSWindow) {

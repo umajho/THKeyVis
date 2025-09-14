@@ -15,6 +15,8 @@ unsafe extern "C" {
 #[repr(C)]
 pub struct SharedState {
     pub has_accessibility_permission: bool,
+    // Request from Swift to close the application
+    pub should_close: bool,
     // Current keyboard layout name (null-terminated string, max 63 chars + null terminator)
     pub current_layout_name: [u8; 64],
     // Key states for the specific keys we monitor
@@ -52,6 +54,7 @@ impl SharedState {
     pub fn new() -> Self {
         Self {
             has_accessibility_permission: false,
+            should_close: false,
             current_layout_name: [0; 64],
             key_states: KeyStates::new(),
         }
@@ -628,7 +631,7 @@ fn draw_keyboard_layout(
     } else {
         5.0 // Minimum Y position to keep text visible
     };
-    
+
     // Draw FPS indicator at left edge, aligned with ESC key
     d.draw_text(
         &format!("FPS: {}", d.get_fps()),
@@ -900,12 +903,17 @@ fn run_ui_process(shared_state: *mut SharedState) {
     let mut last_permission_state = false;
 
     while !rl.window_should_close() {
+        // Read shared state once per frame to check for close request
+        let state = unsafe { &*shared_state };
+
+        // Check if Swift requested application close
+        if state.should_close {
+            break;
+        }
+
         // Get input state before drawing
         let mouse_pos = rl.get_mouse_position();
         let mouse_clicked = rl.is_mouse_button_pressed(MouseButton::MOUSE_BUTTON_LEFT);
-
-        // Read shared state once per frame
-        let state = unsafe { &*shared_state };
 
         // Check accessibility permission state from shared memory
         let has_permission = state.has_accessibility_permission;
@@ -933,7 +941,7 @@ fn run_ui_process(shared_state: *mut SharedState) {
             false
         };
 
-        // Set cursor based on hover state
+        // Set cursor based on hover state (with Swift-side cleanup to prevent crashes)
         if is_button_hovered {
             rl.set_mouse_cursor(MouseCursor::MOUSE_CURSOR_POINTING_HAND);
         } else {
@@ -1195,6 +1203,16 @@ pub extern "C" fn get_layout_name(buffer: *mut std::os::raw::c_char, buffer_size
 
             std::ptr::copy_nonoverlapping(name_bytes.as_ptr(), buffer as *mut u8, copy_len);
             *((buffer as *mut u8).add(copy_len)) = 0; // Null terminator
+        }
+    }
+}
+
+// C FFI function for Swift to request application close
+#[unsafe(no_mangle)]
+pub extern "C" fn request_application_close() {
+    unsafe {
+        if !SHARED_STATE_PTR.is_null() {
+            (*SHARED_STATE_PTR).should_close = true;
         }
     }
 }
