@@ -397,3 +397,13 @@ Now. Read macOS/SPECIFICATION.md, and implement window-related features.
 - Only the title bar can be dragged, the content still can't be dragged to move
   the window.
 ```
+
+###### Part 2
+
+```md
+Make the background dark, and set its opacity to 60%.
+```
+
+```md
+The window is not transparent, unfortunately.
+```

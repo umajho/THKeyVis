@@ -696,6 +696,7 @@ fn run_ui_process(shared_state: *mut SharedState) {
     let (mut rl, thread) = raylib::init()
         .size(WINDOW_WIDTH, BASE_HEIGHT + BANNER_HEIGHT)
         .title("THKeyVis")
+        .transparent()
         .build();
     rl.set_target_fps(120);
 
@@ -734,10 +735,15 @@ fn run_ui_process(shared_state: *mut SharedState) {
 
         // Get window dimensions before drawing
         let window_width = rl.get_screen_width() as f32;
+        let window_height = rl.get_screen_height();
 
         let mut d = rl.begin_drawing(&thread);
 
-        d.clear_background(Color::WHITE);
+        // Clear with transparent background
+        d.clear_background(Color::new(0, 0, 0, 0));
+        
+        // Draw dark semi-transparent background (60% opacity)
+        d.draw_rectangle(0, 0, window_width as i32, window_height, Color::new(20, 20, 20, 153));
 
         if !has_permission {
             // Permission warning banner - centered horizontally

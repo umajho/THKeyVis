@@ -168,6 +168,11 @@ func setupWindowProperties(window: NSWindow) {
     window.canHide = false
     window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
     
+    // Enable transparency and dark background with 60% opacity
+    window.backgroundColor = NSColor.clear
+    window.isOpaque = false
+    window.hasShadow = true
+    
     // Enable dragging anywhere on the window
     window.isMovableByWindowBackground = true
     
