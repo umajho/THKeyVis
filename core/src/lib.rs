@@ -246,9 +246,9 @@ fn run_ui_process(shared_state: *mut SharedState) {
             // Triangle icon (exclamationmark.triangle.fill)
             d.draw_text("⚠", 32, 35, 16, Color::new(255, 165, 0, 255)); // Orange
 
-            // Text: "Accessibility permission required"
+            // Text: "Input Monitoring permission required"
             d.draw_text(
-                "Accessibility permission required",
+                "Input Monitoring permission required",
                 55,
                 38,
                 12,
@@ -277,7 +277,7 @@ fn run_ui_process(shared_state: *mut SharedState) {
             if is_button_hovered && mouse_clicked {
                 // Open System Preferences directly from Rust
                 let _ = Command::new("open")
-                    .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+                    .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
                     .spawn();
             }
         }

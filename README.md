@@ -248,3 +248,17 @@ should pass `startPermissionMonitoring` from the swift side to the rust side,
 and invoke that function after the fork in the parent process and before
 `rdev::listen`?
 ```
+
+###### Part 3
+
+```md
+Now, the elephant in the room: when I pressed `A`, still no thing happens.
+
+I found the root-cause: The permission should be granted is not Accessibility,
+but Input Monitoring.
+
+Here is a way to detect if it is granted:
+https://stackoverflow.com/questions/79010369/how-to-check-the-status-of-the-input-monitoring-permission-in-my-swift-based-m
+
+Also, you need to update the banner.
+```
