@@ -446,3 +446,14 @@ I don't know when did you break them, but:
 ```md
 The hover detection is off. Also, you should not hardcode values.
 ```
+
+###### Part 7
+
+```md
+<!--reverted-->
+```
+
+```md
+Oh, my assumption is wrong, the reason the button not working might be related
+to the implementation of draggable everwhere.
+```
