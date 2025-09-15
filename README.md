@@ -579,3 +579,13 @@ when `windowShouldClose` is called, swift will notify the raylib process that it
 should end (swift calls rust, and rust parent process sets SharedState, rust
 raylib process checks that state along with `window_should_close`)?
 ```
+
+#### Episode 7
+
+##### Prompts
+
+###### Part 1
+
+```md
+can you make the mmap not using a physical file?
+```

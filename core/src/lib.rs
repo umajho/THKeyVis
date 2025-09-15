@@ -1,10 +1,6 @@
 use raylib::prelude::*;
-use std::fs::OpenOptions;
-use std::io::Write;
-use std::os::unix::io::AsRawFd;
 use std::process::Command;
 use std::ptr;
-use std::slice;
 
 // External Swift functions
 unsafe extern "C" {
@@ -198,9 +194,8 @@ type PermissionMonitoringCallback = unsafe extern "C" fn();
 // This is the new main entry point that forks early with permission monitoring callback
 #[unsafe(no_mangle)]
 pub extern "C" fn rust_main_with_callback(callback: Option<PermissionMonitoringCallback>) {
-    // Create shared memory file
-    let shared_mem_path = "/tmp/thkeyvis_shared_state";
-    let shared_state = create_shared_memory(shared_mem_path);
+    // Create anonymous shared memory (no physical file)
+    let shared_state = create_shared_memory();
 
     // Set global pointer for Swift FFI access
     unsafe {
@@ -235,48 +230,32 @@ pub fn init() {
     rust_main();
 }
 
-fn create_shared_memory(path: &str) -> *mut SharedState {
-    // Create/open file for shared memory
-    let mut file = OpenOptions::new()
-        .read(true)
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .open(path)
-        .expect("Failed to create shared memory file");
-
-    // Write initial data to set file size
-    let initial_state = SharedState::new();
-    let state_bytes = unsafe {
-        slice::from_raw_parts(
-            &initial_state as *const _ as *const u8,
-            std::mem::size_of::<SharedState>(),
-        )
-    };
-    file.write_all(state_bytes)
-        .expect("Failed to write initial state");
-    file.flush().expect("Failed to flush file");
-
-    // Memory map the file
-    let fd = file.as_raw_fd();
+fn create_shared_memory() -> *mut SharedState {
     let size = std::mem::size_of::<SharedState>();
 
+    // Create anonymous shared memory mapping (no physical file)
     let ptr = unsafe {
         libc::mmap(
             ptr::null_mut(),
             size,
             libc::PROT_READ | libc::PROT_WRITE,
-            libc::MAP_SHARED,
-            fd,
+            libc::MAP_SHARED | libc::MAP_ANONYMOUS,
+            -1, // No file descriptor needed for anonymous mapping
             0,
         )
     };
 
     if ptr == libc::MAP_FAILED {
-        panic!("Failed to create memory mapping");
+        panic!("Failed to create anonymous memory mapping");
     }
 
-    ptr as *mut SharedState
+    // Initialize the shared memory with default values
+    let shared_state = ptr as *mut SharedState;
+    unsafe {
+        *shared_state = SharedState::new();
+    }
+
+    shared_state
 }
 
 fn run_key_monitor_process(
