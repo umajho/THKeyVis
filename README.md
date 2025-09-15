@@ -33,11 +33,11 @@ is not very common:
 
 ## Copilot Agent Histroy
 
-### Session 1
+### Season 1
 
 [Here](./macOS/README.md#copilot-agent-histroy).
 
-### Session 2
+### Season 2
 
 #### Episode 1
 
