@@ -552,3 +552,46 @@ raylib process checks that state along with `window_should_close`)?
 ```md
 can you make the mmap not using a physical file?
 ```
+
+###### Part 2
+
+```md
+Remove `rl.set_target_fps` and use a custom way to ensure (not cap to) 60fps.
+```
+
+```md
+It can't hit 60 fps, just about 55~57 fps.
+```
+
+```md
+No, what I want is a stable 60 fps.
+```
+
+```md
+Now it is 57~59 fps.
+
+Can't we split a second to target-fps parts. When the current frame has been
+drawn, we find the next part, and sleep the delta of the next part and the
+current time?
+```
+
+```md
+Can you implement compensation for missed frames?
+```
+
+```md
+compensate a bit more frames.
+```
+
+```md
+make the target frame rate twice the refresh rate of the monitor the window is
+on.
+```
+
+```md
+raylib provides GetCurrentMonitor and GetMonitorRefreshRate.
+```
+
+```md
+raylib::core::window::{get_current_monitor,get_monitor_refresh_rate}
+```

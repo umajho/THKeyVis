@@ -1,6 +1,7 @@
 use raylib::prelude::*;
 use std::process::Command;
 use std::ptr;
+use std::time::Instant;
 
 // External Swift functions
 unsafe extern "C" {
@@ -868,7 +869,6 @@ fn run_ui_process(shared_state: *mut SharedState) {
         .transparent()
         .resizable()
         .build();
-    rl.set_target_fps(120);
 
     // Setup window management (always-on-top, dragging, custom title) via Swift
     unsafe {
@@ -880,6 +880,19 @@ fn run_ui_process(shared_state: *mut SharedState) {
     icons.load_icons(&mut rl, &thread);
 
     let mut last_permission_state = false;
+
+    // Get monitor refresh rate and set target FPS to twice that
+    let current_monitor = raylib::core::window::get_current_monitor();
+    let monitor_refresh_rate = raylib::core::window::get_monitor_refresh_rate(current_monitor);
+    let target_fps = monitor_refresh_rate * 2; // Target twice the refresh rate
+    let frame_duration_nanos = 1_000_000_000 / target_fps as u64; // nanoseconds per frame
+    let mut start_time = Instant::now();
+    let mut frame_count = 0u64;
+
+    println!(
+        "Monitor refresh rate: {}Hz, Target FPS: {}",
+        monitor_refresh_rate, target_fps
+    );
 
     while !rl.window_should_close() {
         // Read shared state once per frame to check for close request
@@ -1013,6 +1026,41 @@ fn run_ui_process(shared_state: *mut SharedState) {
             layout.banner_height as f32
         };
         draw_keyboard_layout(&mut d, state, has_permission, &icons, keyboard_offset_y);
+
+        // Aggressive frame timing with enhanced compensation for missed frames
+        frame_count += 1;
+        let target_frame_time =
+            start_time + std::time::Duration::from_nanos(frame_count * frame_duration_nanos);
+        let now = Instant::now();
+
+        // Check if we missed frames (frame took too long)
+        if now > target_frame_time {
+            // Calculate how many frames we're behind
+            let elapsed_since_start = now.duration_since(start_time).as_nanos() as u64;
+            let actual_frame_count = elapsed_since_start / frame_duration_nanos;
+
+            // More aggressive compensation - skip ahead further to account for system load
+            let compensation_buffer = 2; // Add extra frames to compensate for system spikes
+            if actual_frame_count > frame_count {
+                frame_count = actual_frame_count + compensation_buffer;
+            }
+
+            // If we're severely behind (more than 5 frames), reset timing to current time
+            let frames_behind =
+                actual_frame_count.saturating_sub(frame_count.saturating_sub(compensation_buffer));
+            if frames_behind > 5 {
+                // Reset timing base to prevent perpetual lag
+                start_time = now;
+                frame_count = 0;
+            }
+        } else {
+            // We're on time or early, sleep until next frame slot
+            let sleep_duration = target_frame_time - now;
+            // Only sleep if the duration is meaningful (avoid micro-sleeps)
+            if sleep_duration > std::time::Duration::from_micros(100) {
+                std::thread::sleep(sleep_duration);
+            }
+        }
     }
 }
 
