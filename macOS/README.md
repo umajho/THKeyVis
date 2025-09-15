@@ -1,6 +1,6 @@
 # THKeyVis macOS
 
-## Copilot Agent Histroy
+## Copilot Agent History
 
 ### 0
 
