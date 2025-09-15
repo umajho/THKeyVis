@@ -5,9 +5,15 @@ Touhou STG Keystroke Visualizer for my own setup. 99.99% vibe coded.
 Without modifications, I don't think this works for anyone else, since my setup
 is not very common:
 
-- macOS. (The core part is in rust+raylib though, which means it is not entirely
-  impossible to port to other platforms.)
+- macOS. (It is not entirely impossible to port to other platforms though.)
 - ergodox-like keyboard.
+
+The core is in rust, and uses raylib for UI. A relatively smaller part of the
+code is in swift, to support macOS.
+
+There is also a legacy version, which is entirely in swift, and uses SwiftUI for
+UI. It was deprecated due to not being responsive enough. (~1 frame slower than
+the game. )
 
 ## Caveats
 
